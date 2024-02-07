@@ -1,0 +1,37 @@
+.{
+    .name = "flow-themes",
+    .version = "0.0.1",
+
+    .dependencies = .{
+
+        // themes
+        .theme_1984 = .{
+            .url = "https://github.com/juanmnl/vs-1984/archive/983c9bd674d2aedd9edb6f18b2d62c31a2f9eae7.tar.gz",
+            .hash = "1220fba79c5688d869aa2207e3e9b174a985bf298b9017f463e9e3a5fbb7668b86d9",
+        },
+        .theme_cobalt2 = .{
+            .url = "https://github.com/wesbos/cobalt2-vscode/archive/542ecdfcff52c5175b85438de237ba88e7f6c140.tar.gz",
+            .hash = "1220b860fa41d1d90450518e76096bcd9473d7e3e5e4ed01d3578ae4fe10175e9981",
+        },
+        .theme_oldschool = .{
+            .url = "https://github.com/EricsonWillians/oldschool-theme/archive/15f472028b56ac58495d6bf4ecd7d173320646f0.tar.gz",
+            .hash = "12207eb3983e2ecd7e91c299e7a9dc77b13d44fd5d6bada1928f2d6864c0036691cf",
+        },
+        .theme_turbo_colors = .{
+            .url = "https://github.com/metropolian/theme-turbo/archive/fc6765cad1d28a418666458f80f6b863090f0a49.tar.gz",
+            .hash = "122019d9e3f76e9b866131e1dc9cea2b77a12a278a5f253d5b8d6c9ea92c92e1fc06",
+        },
+        .theme_vscode = .{
+            .url = "https://github.com/microsoft/vscode/archive/fd2db103459c82eb77d36bb968d3b98137cda5b4.tar.gz",
+            .hash = "12207d7292daa0811be527c42e4071357bc248328691a426f9836369fa54cc9f7200",
+        },
+        .theme_CRT = .{
+            .url = "https://github.com/neurocyte/crt-themes/releases/download/master-4705c3761dd0fbc3b5ae85f1c39f0e9fe8f6ce5a/crt-themes.tar.gz",
+            .hash = "1220da8b8fe19481e05ca1678a97656532bfbba69b898d215d879e7f2b28fb903783",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+    },
+}
