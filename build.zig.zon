@@ -29,6 +29,10 @@
             .url = "https://github.com/neurocyte/crt-themes/releases/download/master-4705c3761dd0fbc3b5ae85f1c39f0e9fe8f6ce5a/crt-themes.tar.gz",
             .hash = "1220da8b8fe19481e05ca1678a97656532bfbba69b898d215d879e7f2b28fb903783",
         },
+        .theme_gruvbox = .{
+            .url = "https://github.com/jdinhify/vscode-theme-gruvbox/archive/b1b9837e6747e040b69c7d46e502286bb0f257f7.tar.gz",
+            .hash = "1220fcaf3181a354ee8a1413f3a15d2a1842e1377a95f636d4f26602d5bb38e45f00",
+        },
     },
     .paths = .{
         "build.zig",

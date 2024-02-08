@@ -51,4 +51,10 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "CRT", "themes/CRT-Gray-color-theme.json");
     theme_file(b, exe, "CRT", "themes/CRT-Green-color-theme.json");
     theme_file(b, exe, "CRT", "themes/CRT-Paper-color-theme.json");
+    theme_file(b, exe, "gruvbox", "themes/gruvbox-dark-hard.json");
+    theme_file(b, exe, "gruvbox", "themes/gruvbox-dark-medium.json");
+    theme_file(b, exe, "gruvbox", "themes/gruvbox-dark-soft.json");
+    theme_file(b, exe, "gruvbox", "themes/gruvbox-light-hard.json");
+    theme_file(b, exe, "gruvbox", "themes/gruvbox-light-medium.json");
+    theme_file(b, exe, "gruvbox", "themes/gruvbox-light-soft.json");
 }
