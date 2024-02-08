@@ -11,8 +11,6 @@ const Style = theme.Style;
 const Token = theme.Token;
 const Tokens = theme.Tokens;
 const TokenMap = std.StringHashMap(Style);
-const Scopes = [][]const u8;
-const ScopeMap = std.StringHashMap(usize);
 
 fn get_include_json(file_name: []const u8) []const u8 {
     for (&theme_files) |*tf| {
@@ -265,7 +263,7 @@ fn to_scope_id(scope: []const u8) usize {
 }
 
 fn compare_tokens(_: void, lhs: Token, rhs: Token) bool {
-    return lhs.id < rhs.id;
+    return std.mem.lessThan(u8, scopes_vec.items[lhs.id], scopes_vec.items[rhs.id]);
 }
 
 fn find_color(name: []const u8, cb: []const u8) ?Color {
@@ -729,6 +727,7 @@ fn write_all_themes(writer: Writer) !void {
 }
 
 var allocator: std.mem.Allocator = undefined;
+const ScopeMap = std.StringHashMap(usize);
 var scopes: ScopeMap = undefined;
 var scopes_vec: std.ArrayList([]const u8) = undefined;
 
