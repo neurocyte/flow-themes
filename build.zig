@@ -57,4 +57,7 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "gruvbox", "themes/gruvbox-light-hard.json");
     theme_file(b, exe, "gruvbox", "themes/gruvbox-light-medium.json");
     theme_file(b, exe, "gruvbox", "themes/gruvbox-light-soft.json");
+    theme_file(b, exe, "tokyo_night", "themes/tokyo-night-storm-color-theme.json");
+    theme_file(b, exe, "tokyo_night", "themes/tokyo-night-color-theme.json");
+    theme_file(b, exe, "tokyo_night", "themes/tokyo-night-light-color-theme.json");
 }

@@ -33,6 +33,9 @@ pub const theme_files = [_]theme_file{
     THEME("extensions/theme-defaults/themes/light_vs.json"),
     THEME("extensions/theme-defaults/themes/light_plus.json"),
     THEME("extensions/theme-defaults/themes/light_modern.json"),
+    THEME("themes/tokyo-night-storm-color-theme.json"),
+    THEME("themes/tokyo-night-color-theme.json"),
+    THEME("themes/tokyo-night-light-color-theme.json"),
 };
 
 fn THEME(comptime file_path: []const u8) theme_file {
