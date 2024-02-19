@@ -2,6 +2,9 @@ const std = @import("std");
 pub const theme_file = struct { file_name: []const u8, json: []const u8, cbor: ?[]const u8 = null };
 
 pub const theme_files = [_]theme_file{
+
+    // dark themes
+
     THEME("default.json"),
     THEME("themes/1984-color-theme.json"),
     THEME("themes/1984-cyberpunk-color-theme.json"),
@@ -21,9 +24,18 @@ pub const theme_files = [_]theme_file{
     THEME("themes/gruvbox-dark-hard.json"),
     THEME("themes/gruvbox-dark-medium.json"),
     THEME("themes/gruvbox-dark-soft.json"),
+    THEME("themes/tokyo-night-storm-color-theme.json"),
+    THEME("themes/tokyo-night-color-theme.json"),
+    THEME("ayu-dark.json"),
+    THEME("ayu-dark-bordered.json"),
+    THEME("ayu-mirage.json"),
+    THEME("ayu-mirage-bordered.json"),
     THEME("extensions/theme-defaults/themes/dark_vs.json"),
     THEME("extensions/theme-defaults/themes/dark_plus.json"),
     THEME("extensions/theme-defaults/themes/dark_modern.json"),
+
+    // light themes
+
     THEME("themes/1984-light-color-theme.json"),
     THEME("extensions/theme-solarized-light/themes/solarized-light-color-theme.json"),
     THEME("themes/CRT-Paper-color-theme.json"),
@@ -33,13 +45,7 @@ pub const theme_files = [_]theme_file{
     THEME("extensions/theme-defaults/themes/light_vs.json"),
     THEME("extensions/theme-defaults/themes/light_plus.json"),
     THEME("extensions/theme-defaults/themes/light_modern.json"),
-    THEME("themes/tokyo-night-storm-color-theme.json"),
-    THEME("themes/tokyo-night-color-theme.json"),
     THEME("themes/tokyo-night-light-color-theme.json"),
-    THEME("ayu-dark.json"),
-    THEME("ayu-dark-bordered.json"),
-    THEME("ayu-mirage.json"),
-    THEME("ayu-mirage-bordered.json"),
     THEME("ayu-light.json"),
     THEME("ayu-light-bordered.json"),
 };
