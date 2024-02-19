@@ -60,4 +60,10 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "tokyo_night", "themes/tokyo-night-storm-color-theme.json");
     theme_file(b, exe, "tokyo_night", "themes/tokyo-night-color-theme.json");
     theme_file(b, exe, "tokyo_night", "themes/tokyo-night-light-color-theme.json");
+    theme_file(b, exe, "ayu", "ayu-dark.json");
+    theme_file(b, exe, "ayu", "ayu-dark-bordered.json");
+    theme_file(b, exe, "ayu", "ayu-mirage.json");
+    theme_file(b, exe, "ayu", "ayu-mirage-bordered.json");
+    theme_file(b, exe, "ayu", "ayu-light.json");
+    theme_file(b, exe, "ayu", "ayu-light-bordered.json");    
 }

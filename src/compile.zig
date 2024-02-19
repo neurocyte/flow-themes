@@ -184,6 +184,8 @@ fn load_token_settings_object(file_name: []const u8, scopes_name: ?[]const u8, c
                 style.fs = .italic;
             } else if (eql(u8, "strikethrough", value)) {
                 style.fs = .strikethrough;
+            } else if (eql(u8, "normal", value)) {
+                style.fs = .normal;
             } else if (eql(u8, "", value)) {
                 style.fs = .normal;
             } else {

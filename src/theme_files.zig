@@ -36,8 +36,15 @@ pub const theme_files = [_]theme_file{
     THEME("themes/tokyo-night-storm-color-theme.json"),
     THEME("themes/tokyo-night-color-theme.json"),
     THEME("themes/tokyo-night-light-color-theme.json"),
+    THEME("ayu-dark.json"),
+    THEME("ayu-dark-bordered.json"),
+    THEME("ayu-mirage.json"),
+    THEME("ayu-mirage-bordered.json"),
+    THEME("ayu-light.json"),
+    THEME("ayu-light-bordered.json"),
 };
 
 fn THEME(comptime file_path: []const u8) theme_file {
+    @setEvalBranchQuota(2000);
     return .{ .file_name = std.fs.path.basename(file_path), .json = @embedFile(file_path) };
 }
