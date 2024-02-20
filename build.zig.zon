@@ -41,6 +41,10 @@
             .url = "https://github.com/ayu-theme/vscode-ayu/archive/91839e8a9dfa78d61e58dbcf9b52272a01fee66a.tar.gz",
             .hash = "1220217a9a25d48cd61948f3455d08d4f64ed2c72e79f3257a9f28c746eb1432af27",
         },
+        .theme_onedark_pro = .{
+            .url = "https://github.com/Binaryify/OneDark-Pro/archive/2cb4ae735fc0482e0486b52cd873128eb5249900.tar.gz",
+            .hash = "122046bbdd4b5a816d5324a8c6b78e4d70dc07cdafb113b2a118bcdfeb0f8531dc60",
+        },
     },
     .paths = .{
         "build.zig",

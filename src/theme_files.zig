@@ -33,6 +33,7 @@ pub const theme_files = [_]theme_file{
     THEME("extensions/theme-defaults/themes/dark_vs.json"),
     THEME("extensions/theme-defaults/themes/dark_plus.json"),
     THEME("extensions/theme-defaults/themes/dark_modern.json"),
+    THEME("themes/OneDark-Pro.json"),
 
     // light themes
 

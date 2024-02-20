@@ -66,4 +66,5 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "ayu", "ayu-mirage-bordered.json");
     theme_file(b, exe, "ayu", "ayu-light.json");
     theme_file(b, exe, "ayu", "ayu-light-bordered.json");    
+    theme_file(b, exe, "onedark_pro", "themes/OneDark-Pro.json");    
 }
