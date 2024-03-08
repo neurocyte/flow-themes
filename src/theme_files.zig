@@ -34,6 +34,10 @@ pub const theme_files = [_]theme_file{
     THEME("extensions/theme-defaults/themes/dark_plus.json"),
     THEME("extensions/theme-defaults/themes/dark_modern.json"),
     THEME("themes/OneDark-Pro.json"),
+    THEME("themes/rose-pine-color-theme.json"),
+    THEME("themes/rose-pine-no-italics-color-theme.json"),
+    THEME("themes/rose-pine-moon-color-theme.json"),
+    THEME("themes/rose-pine-moon-no-italics-color-theme.json"),
 
     // light themes
 
@@ -49,6 +53,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/tokyo-night-light-color-theme.json"),
     THEME("ayu-light.json"),
     THEME("ayu-light-bordered.json"),
+    THEME("themes/rose-pine-dawn-color-theme.json"),
 };
 
 fn THEME(comptime file_path: []const u8) theme_file {

@@ -67,4 +67,9 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "ayu", "ayu-light.json");
     theme_file(b, exe, "ayu", "ayu-light-bordered.json");
     theme_file(b, exe, "onedark_pro", "themes/OneDark-Pro.json");
+    theme_file(b, exe, "rose_pine", "themes/rose-pine-color-theme.json");
+    theme_file(b, exe, "rose_pine", "themes/rose-pine-no-italics-color-theme.json");
+    theme_file(b, exe, "rose_pine", "themes/rose-pine-moon-color-theme.json");
+    theme_file(b, exe, "rose_pine", "themes/rose-pine-moon-no-italics-color-theme.json");
+    theme_file(b, exe, "rose_pine", "themes/rose-pine-dawn-color-theme.json");
 }

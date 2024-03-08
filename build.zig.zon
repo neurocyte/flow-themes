@@ -45,6 +45,10 @@
             .url = "https://github.com/Binaryify/OneDark-Pro/archive/2cb4ae735fc0482e0486b52cd873128eb5249900.tar.gz",
             .hash = "122046bbdd4b5a816d5324a8c6b78e4d70dc07cdafb113b2a118bcdfeb0f8531dc60",
         },
+        .theme_rose_pine = .{
+            .url = "https://github.com/rose-pine/vscode/archive/5a6d89246d58316802bf5c54bb83d6654ff6a1c5.tar.gz",
+            .hash = "122000c273023b1213dbc73bc1c144a7a6ef5879a30205ad1939589ddc4736a6d24e",
+        },
     },
     .paths = .{
         "build.zig",
