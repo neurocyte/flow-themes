@@ -67,6 +67,8 @@ fn load_json(theme_: *theme_file) theme {
         .editor_gutter_modified = derive_style.editor_gutter_modified(type_idx, cb),
         .editor_gutter_added = derive_style.editor_gutter_added(type_idx, cb),
         .editor_gutter_deleted = derive_style.editor_gutter_deleted(type_idx, cb),
+        .editor_widget = derive_style.editor_widget(type_idx, cb),
+        .editor_widget_border = derive_style.editor_widget_border(type_idx, cb),
         .statusbar = derive_style.statusbar(type_idx, cb),
         .statusbar_hover = derive_style.statusbar_hover(type_idx, cb),
         .scrollbar = derive_style.scrollbar(type_idx, cb),
@@ -458,6 +460,20 @@ const derive_style = struct {
         };
     }
 
+    fn editor_widget(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("editorWidget.foreground", cb)) |col| col else defaults.@"editorWidget.foreground"(type_idx, cb),
+            .bg = if (find_color("editorWidget.background", cb)) |col| col else defaults.@"editorWidget.background"(type_idx, cb),
+        };
+    }
+
+    fn editor_widget_border(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("editorWidget.foreground", cb)) |col| col else defaults.@"editorWidget.foreground"(type_idx, cb),
+            .bg = if (find_color("editorWidget.border", cb)) |col| col else defaults.@"editorWidget.border"(type_idx, cb),
+        };
+    }
+
     fn statusbar(type_idx: usize, cb: []const u8) Style {
         return .{
             .fg = if (find_color("statusBar.foreground", cb)) |col| col else defaults.@"statusBar.foreground"(type_idx, cb),
@@ -656,6 +672,21 @@ const defaults = struct {
     // registerColor('editorGutter.deletedBackground', { dark: editorErrorForeground, light: editorErrorForeground, hcDark: editorErrorForeground, hcLight: editorErrorForeground }, nls.localize('editorGutterDeletedBackground', "Editor gutter background color for lines that are deleted."));
     fn @"editorGutter.deletedBackground"(type_idx: usize, cb: []const u8) ?Color {
         return @"editorError.foreground"(type_idx, cb);
+    }
+
+    // registerColor('editorWidget.foreground', { dark: foreground, light: foreground, hcDark: foreground, hcLight: foreground }, nls.localize('editorWidgetForeground', 'Foreground color of editor widgets, such as find/replace.'));
+    fn @"editorWidget.foreground"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.editor(type_idx, cb).fg;
+    }
+
+    // registerColor('editorWidget.background', { dark: '#252526', light: '#F3F3F3', hcDark: '#0C141F', hcLight: Color.white }, nls.localize('editorWidgetBackground', 'Background color of editor widgets, such as find/replace.'));
+    fn @"editorWidget.background"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ 0x252526, 0xF3F3F3 })[type_idx];
+    }
+
+    // registerColor('editorWidget.border', { dark: '#454545', light: '#C8C8C8', hcDark: contrastBorder, hcLight: contrastBorder }, nls.localize('editorWidgetBorder', 'Border color of editor widgets. The color is only used if the widget chooses to have a border and if the color is not overridden by a widget.'));
+    fn @"editorWidget.border"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ 0x454545, 0xC8C8C8 })[type_idx];
     }
 };
 
