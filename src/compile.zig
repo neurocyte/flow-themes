@@ -76,6 +76,11 @@ fn load_json(theme_: *theme_file) theme {
         .scrollbar_active = derive_style.scrollbar_active(type_idx, cb),
         .sidebar = derive_style.sidebar(type_idx, cb),
         .panel = derive_style.panel(type_idx, cb),
+        .input = derive_style.input(type_idx, cb),
+        .input_border = derive_style.input_border(type_idx, cb),
+        .input_placeholder = derive_style.input_placeholder(type_idx, cb),
+        .input_option_active = derive_style.input_option_active(type_idx, cb),
+        .input_option_hover = derive_style.input_option_hover(type_idx, cb),
     };
 }
 
@@ -523,6 +528,48 @@ const derive_style = struct {
             .bg = if (find_color("panel.background", cb)) |col| col else editor_style.bg,
         };
     }
+
+    fn input(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("input.foreground", cb)) |col| col else defaults.@"input.foreground"(type_idx, cb),
+            .bg = if (find_color("input.background", cb)) |col| col else defaults.@"input.background"(type_idx, cb),
+        };
+    }
+
+    fn input_border(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("input.border", cb)) |col| col else defaults.@"input.border"(type_idx, cb),
+            .bg = if (find_color("input.background", cb)) |col| col else defaults.@"input.background"(type_idx, cb),
+        };
+    }
+
+    fn input_placeholder(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("input.placeholderForeground", cb)) |col| col else defaults.@"input.placeholderForeground"(type_idx, cb),
+            .bg = if (find_color("input.background", cb)) |col| col else defaults.@"input.background"(type_idx, cb),
+        };
+    }
+
+    fn input_option(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("input.foreground", cb)) |col| col else defaults.@"input.foreground"(type_idx, cb),
+            .bg = if (find_color("input.background", cb)) |col| col else defaults.@"input.background"(type_idx, cb),
+        };
+    }
+
+    fn input_option_active(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("inputOption.activeForeground", cb)) |col| col else defaults.@"inputOption.activeForeground"(type_idx, cb),
+            .bg = if (find_color("inputOption.activeBackground", cb)) |col| col else defaults.@"inputOption.activeBackground"(type_idx, cb),
+        };
+    }
+
+    fn input_option_hover(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("input.foreground", cb)) |col| col else defaults.@"input.foreground"(type_idx, cb),
+            .bg = if (find_color("inputOption.hoverBackground", cb)) |col| col else defaults.@"inputOption.hoverBackground"(type_idx, cb),
+        };
+    }
 };
 
 const defaults = struct {
@@ -687,6 +734,46 @@ const defaults = struct {
     // registerColor('editorWidget.border', { dark: '#454545', light: '#C8C8C8', hcDark: contrastBorder, hcLight: contrastBorder }, nls.localize('editorWidgetBorder', 'Border color of editor widgets. The color is only used if the widget chooses to have a border and if the color is not overridden by a widget.'));
     fn @"editorWidget.border"(type_idx: usize, _: []const u8) ?Color {
         return ([2]Color{ 0x454545, 0xC8C8C8 })[type_idx];
+    }
+
+    // registerColor('input.foreground', { dark: foreground, light: foreground, hcDark: foreground, hcLight: foreground }, nls.localize('inputBoxForeground', "Input box foreground."));
+    fn @"input.foreground"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.editor(type_idx, cb).fg;
+    }
+
+    // registerColor('input.background', { dark: '#3C3C3C', light: Color.white, hcDark: Color.black, hcLight: Color.white }, nls.localize('inputBoxBackground', "Input box background."));
+    fn @"input.background"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ 0x3C3C3C, 0xFFFFFF })[type_idx];
+    }
+
+    // registerColor('input.border', { dark: null, light: null, hcDark: contrastBorder, hcLight: contrastBorder }, nls.localize('inputBoxBorder', "Input box border."));
+    fn @"input.border"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.editor(type_idx, cb).fg;
+    }
+
+    // registerColor('input.placeholderForeground', { light: transparent(foreground, 0.5), dark: transparent(foreground, 0.5), hcDark: transparent(foreground, 0.7), hcLight: transparent(foreground, 0.7) }, nls.localize('inputPlaceholderForeground', "Input box foreground color for placeholder text."));
+    fn @"input.placeholderForeground"(type_idx: usize, cb: []const u8) ?Color {
+        return apply_alpha_value_fg(derive_style.editor(type_idx, cb), 256 / 2).fg;
+    }
+
+    // registerColor('inputOption.activeForeground', { dark: Color.white, light: Color.black, hcDark: foreground, hcLight: foreground }, nls.localize('inputOption.activeForeground', "Foreground color of activated options in input fields."));
+    fn @"inputOption.activeForeground"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ 0xFFFFFF, 0x000000 })[type_idx];
+    }
+
+    // registerColor('focusBorder', { dark: '#007FD4', light: '#0090F1', hcDark: '#F38518', hcLight: '#006BBD' }, nls.localize('focusBorder', "Overall border color for focused elements. This color is only used if not overridden by a component."));
+    fn focusBorder(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ 0x007FD4, 0x0090F1 })[type_idx];
+    }
+
+    // registerColor('inputOption.activeBackground', { dark: transparent(focusBorder, 0.4), light: transparent(focusBorder, 0.2), hcDark: Color.transparent, hcLight: Color.transparent }, nls.localize('inputOption.activeBackground', "Background hover color of options in input fields."));
+    fn @"inputOption.activeBackground"(type_idx: usize, cb: []const u8) ?Color {
+        return ([2]Color{ apply_alpha_value(focusBorder(0, cb).?, 256 * 40 / 100), apply_alpha_value(focusBorder(1, cb).?, 256 * 20 / 100) })[type_idx];
+    }
+
+    // registerColor('inputOption.hoverBackground', { dark: '#5a5d5e80', light: '#b8b8b850', hcDark: null, hcLight: null }, nls.localize('inputOption.hoverBackground', "Background color of activated options in input fields."));
+    fn @"inputOption.hoverBackground"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ apply_alpha_value(0x5a5d5e, 0x80), apply_alpha_value(0xb8b8b8, 0x50) })[type_idx];
     }
 };
 

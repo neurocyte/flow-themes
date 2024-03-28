@@ -24,6 +24,11 @@ scrollbar_hover: Style,
 scrollbar_active: Style,
 sidebar: Style,
 panel: Style,
+input: Style,
+input_border: Style,
+input_placeholder: Style,
+input_option_active: Style,
+input_option_hover: Style,
 
 pub const FontStyle = enum { normal, bold, italic, underline, strikethrough };
 pub const Style = struct { fg: ?Color = null, bg: ?Color = null, fs: ?FontStyle = null };
