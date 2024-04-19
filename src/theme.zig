@@ -7,6 +7,9 @@ editor: Style,
 editor_cursor: Style,
 editor_line_highlight: Style,
 editor_error: Style,
+editor_warning: Style,
+editor_information: Style,
+editor_hint: Style,
 editor_match: Style,
 editor_selection: Style,
 editor_whitespace: Style,
@@ -30,7 +33,7 @@ input_placeholder: Style,
 input_option_active: Style,
 input_option_hover: Style,
 
-pub const FontStyle = enum { normal, bold, italic, underline, strikethrough };
+pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };
 pub const Style = struct { fg: ?Color = null, bg: ?Color = null, fs: ?FontStyle = null };
 pub const Color = u24;
 pub const Token = struct { id: usize, style: Style };

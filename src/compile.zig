@@ -59,6 +59,9 @@ fn load_json(theme_: *theme_file) theme {
         .editor_cursor = derive_style.editor_cursor(type_idx, cb),
         .editor_line_highlight = derive_style.editor_line_highlight(type_idx, cb),
         .editor_error = derive_style.editor_error(type_idx, cb),
+        .editor_warning = derive_style.editor_warning(type_idx, cb),
+        .editor_information = derive_style.editor_information(type_idx, cb),
+        .editor_hint = derive_style.editor_hint(type_idx, cb),
         .editor_match = derive_style.editor_match(type_idx, cb),
         .editor_selection = derive_style.editor_selection(type_idx, cb),
         .editor_whitespace = derive_style.editor_whitespace(type_idx, cb),
@@ -409,6 +412,27 @@ const derive_style = struct {
         };
     }
 
+    fn editor_warning(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("editorWarning.foreground", cb)) |col| col else defaults.@"editorWarning.foreground"(type_idx, cb),
+            .bg = if (find_color("editorWarning.background", cb)) |col| col else defaults.@"editorWarning.background"(type_idx, cb),
+        };
+    }
+
+    fn editor_information(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("editorInfo.foreground", cb)) |col| col else defaults.@"editorInfo.foreground"(type_idx, cb),
+            .bg = if (find_color("editorInfo.background", cb)) |col| col else defaults.@"editorInfo.background"(type_idx, cb),
+        };
+    }
+
+    fn editor_hint(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("editorHint.foreground", cb)) |col| col else defaults.@"editorHint.foreground"(type_idx, cb),
+            .bg = if (find_color("editorHint.background", cb)) |col| col else defaults.@"editorHint.background"(type_idx, cb),
+        };
+    }
+
     fn editor_match(type_idx: usize, cb: []const u8) Style {
         return .{
             .fg = if (find_color("editor.foreground", cb)) |col| col else defaults.@"editor.foreground"(type_idx, cb),
@@ -615,6 +639,36 @@ const defaults = struct {
         return derive_style.editor(type_idx, cb).bg;
     }
 
+    // registerColor('editorWarning.foreground', { dark: '#CCA700', light: '#BF8803', hcDark: '#FFD370', hcLight: '#895503' }, nls.localize('editorWarning.foreground', 'Foreground color of warning squigglies in the editor.'));
+    fn @"editorWarning.foreground"(type_idx: usize, _: []const u8) Color {
+        return ([2]Color{ 0xCCA700, 0xBF8803 })[type_idx];
+    }
+
+    // registerColor('editorWarning.background', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('editorWarning.background', 'Background color of warning text in the editor. The color must not be opaque so as not to hide underlying decorations.'), true);
+    fn @"editorWarning.background"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.editor(type_idx, cb).bg;
+    }
+
+    // registerColor('editorInfo.foreground', { dark: '#3794FF', light: '#1a85ff', hcDark: '#3794FF', hcLight: '#1a85ff' }, nls.localize('editorInfo.foreground', 'Foreground color of info squigglies in the editor.'));
+    fn @"editorInfo.foreground"(type_idx: usize, _: []const u8) Color {
+        return ([2]Color{ 0x3794FF, 0x1a85ff })[type_idx];
+    }
+
+    // registerColor('editorInfo.background', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('editorInfo.background', 'Background color of info text in the editor. The color must not be opaque so as not to hide underlying decorations.'), true);
+    fn @"editorInfo.background"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.editor(type_idx, cb).bg;
+    }
+
+    // registerColor('editorHint.foreground', { dark: Color.fromHex('#eeeeee').transparent(0.7), light: '#6c6c6c', hcDark: null, hcLight: null }, nls.localize('editorHint.foreground', 'Foreground color of hint squigglies in the editor.'));
+    fn @"editorHint.foreground"(type_idx: usize, _: []const u8) Color {
+        return ([2]Color{ apply_alpha_value(0xeeeeee, 0xb3), 0x6c6c6c })[type_idx];
+    }
+
+    // none
+    fn @"editorHint.background"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.editor(type_idx, cb).bg;
+    }
+
     // registerColor('editor.findMatchBackground', { light: '#A8AC94', dark: '#515C6A', hcDark: null, hcLight: null }, nls.localize('editorFindMatch', "Color of the current search match."));
     fn @"editor.findMatchBackground"(type_idx: usize, _: []const u8) Color {
         return ([2]Color{ 0x515C6A, 0xA8AC94 })[type_idx];
@@ -792,6 +846,7 @@ fn write_Style(writer: Writer, value: Style) !void {
         .bold => "bold",
         .italic => "italic",
         .underline => "underline",
+        .undercurl => "undercurl",
         .strikethrough => "strikethrough",
     }});
     _ = try writer.print("}}", .{});
