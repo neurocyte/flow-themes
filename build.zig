@@ -72,4 +72,6 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "rose_pine", "themes/rose-pine-moon-color-theme.json");
     theme_file(b, exe, "rose_pine", "themes/rose-pine-moon-no-italics-color-theme.json");
     theme_file(b, exe, "rose_pine", "themes/rose-pine-dawn-color-theme.json");
+    theme_file(b, exe, "adwaita", "themes/adwaita-dark.json");
+    theme_file(b, exe, "adwaita", "themes/adwaita-light.json");
 }

@@ -49,6 +49,10 @@
             .url = "https://github.com/rose-pine/vscode/archive/5a6d89246d58316802bf5c54bb83d6654ff6a1c5.tar.gz",
             .hash = "122000c273023b1213dbc73bc1c144a7a6ef5879a30205ad1939589ddc4736a6d24e",
         },
+        .theme_adwaita = .{
+            .url = "https://github.com/piousdeer/vscode-adwaita/archive/5de82debcb101e5796b478e55dd382bd64be64f7.tar.gz",
+            .hash = "1220c6227c698f27a09c20706a8c785c4123a943e3b953c1f50457496f54e725d55b",
+        },
     },
     .paths = .{
         "build.zig",

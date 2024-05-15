@@ -38,6 +38,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/rose-pine-no-italics-color-theme.json"),
     THEME("themes/rose-pine-moon-color-theme.json"),
     THEME("themes/rose-pine-moon-no-italics-color-theme.json"),
+    THEME("themes/adwaita-dark.json"),
 
     // light themes
 
@@ -54,6 +55,7 @@ pub const theme_files = [_]theme_file{
     THEME("ayu-light.json"),
     THEME("ayu-light-bordered.json"),
     THEME("themes/rose-pine-dawn-color-theme.json"),
+    THEME("themes/adwaita-light.json"),
 };
 
 fn THEME(comptime file_path: []const u8) theme_file {
