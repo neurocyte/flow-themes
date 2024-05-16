@@ -53,6 +53,14 @@
             .url = "https://github.com/piousdeer/vscode-adwaita/archive/5de82debcb101e5796b478e55dd382bd64be64f7.tar.gz",
             .hash = "1220c6227c698f27a09c20706a8c785c4123a943e3b953c1f50457496f54e725d55b",
         },
+        .theme_everforest = .{
+            .url = "https://github.com/sainnhe/everforest-vscode/archive/1e6e97e2ef074993f6e0ff6f2d67514431f22067.tar.gz",
+            .hash = "1220419a333850cf5fee8f6b65a8f10b299a37706154840ee7dc112f6a970db56542",
+        },
+        .theme_nord = .{
+            .url = "https://github.com/nordtheme/visual-studio-code/archive/8ead09822c02d0d49d0f764104505e5a34d3689f.tar.gz",
+            .hash = "12200a932586d96e15f5c325b4e671cf18257a0c125e3c5c46cdd18b201e454bf90f",
+        },
     },
     .paths = .{
         "build.zig",

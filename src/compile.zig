@@ -192,9 +192,14 @@ fn load_token_settings_object(file_name: []const u8, scopes_name: ?[]const u8, c
             } else if (eql(u8, "bold italic", value)) {
                 style.fs = .bold;
                 style.fs = .italic;
+            } else if (eql(u8, "italic bold", value)) {
+                style.fs = .bold;
+                style.fs = .italic;
             } else if (eql(u8, "strikethrough", value)) {
                 style.fs = .strikethrough;
             } else if (eql(u8, "normal", value)) {
+                style.fs = .normal;
+            } else if (eql(u8, "regular", value)) {
                 style.fs = .normal;
             } else if (eql(u8, "", value)) {
                 style.fs = .normal;

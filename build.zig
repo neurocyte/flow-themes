@@ -74,4 +74,7 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "rose_pine", "themes/rose-pine-dawn-color-theme.json");
     theme_file(b, exe, "adwaita", "themes/adwaita-dark.json");
     theme_file(b, exe, "adwaita", "themes/adwaita-light.json");
+    theme_file(b, exe, "everforest", "themes/everforest-dark.json");
+    theme_file(b, exe, "everforest", "themes/everforest-light.json");
+    theme_file(b, exe, "nord", "themes/nord-color-theme.json");
 }
