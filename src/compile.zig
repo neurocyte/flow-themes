@@ -943,7 +943,7 @@ fn fatal(comptime format: []const u8, args: anytype) noreturn {
 
 fn hjson(data: []const u8) ![]const u8 {
     const cmd = [_][]const u8{ "hjson", "-j" }; // Replace with your shell command
-    var child = std.ChildProcess.init(&cmd, allocator);
+    var child = std.process.Child.init(&cmd, allocator);
     child.stdin_behavior = .Pipe;
     child.stdout_behavior = .Pipe;
     child.stderr_behavior = .Pipe;
@@ -961,7 +961,7 @@ fn hjson(data: []const u8) ![]const u8 {
     }
     const term = try child.wait();
     switch (term) {
-        std.ChildProcess.Term.Exited => |code| if (code == 0) return out.toOwnedSlice(),
+        std.process.Child.Term.Exited => |code| if (code == 0) return out.toOwnedSlice(),
         else => {},
     }
     std.debug.panic("Exited with code {any}", .{term});
