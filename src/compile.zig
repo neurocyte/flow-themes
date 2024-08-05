@@ -959,7 +959,7 @@ fn hjson(data: []const u8) ![]const u8 {
         if (bytesRead == 0) break;
         try writer.writeAll(buffer[0..bytesRead]);
     }
-    const term = try child.wait();
+    const term = child.wait() catch |e| std.debug.panic("error running hjson: {any}", .{e});
     switch (term) {
         std.process.Child.Term.Exited => |code| if (code == 0) return out.toOwnedSlice(),
         else => {},
