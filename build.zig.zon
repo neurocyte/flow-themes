@@ -61,6 +61,10 @@
             .url = "https://github.com/nordtheme/visual-studio-code/archive/8ead09822c02d0d49d0f764104505e5a34d3689f.tar.gz",
             .hash = "12200a932586d96e15f5c325b4e671cf18257a0c125e3c5c46cdd18b201e454bf90f",
         },
+        .theme_spacedust = .{
+            .url = "https://github.com/wallsified/Spacedust-VSCode/archive/160a0e266a369c336d5393c93decc078c636fc3d.tar.gz",
+            .hash = "122027fbeddeabd06d699e81c408dadf17d60c5d538e13e7c69f2685ca63262a2bda",
+        }
     },
     .paths = .{
         "build.zig",
