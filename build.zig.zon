@@ -33,6 +33,10 @@
             .url = "https://github.com/jdinhify/vscode-theme-gruvbox/archive/b1b9837e6747e040b69c7d46e502286bb0f257f7.tar.gz",
             .hash = "1220fcaf3181a354ee8a1413f3a15d2a1842e1377a95f636d4f26602d5bb38e45f00",
         },
+        .theme_gruvbox_material = .{
+            .url = "https://github.com/sainnhe/gruvbox-material-vscode/archive/1ef2c818f2651e0eae73bacad4ab87b94801f42b.tar.gz",
+            .hash = "122088d568238fcd69297acc42cf04555fbbc89e86b6a48f6ae5d66db387053621f1",
+        },
         .theme_tokyo_night = .{
             .url = "https://github.com/enkia/tokyo-night-vscode-theme/archive/55336bd57924021c174470d9f476a1db01eddb97.tar.gz",
             .hash = "1220f9729cd271c29dee0e199b2bc0f801cb657b603668680a07191b9a8c1b1f21fb",
