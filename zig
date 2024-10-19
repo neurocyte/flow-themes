@@ -45,10 +45,7 @@ get_zig() {
     (
         mkdir -p "$ZIGDIR"
         cd "$ZIGDIR"
-        TARBALL="https://ziglang.org/builds/$ZIGVER.tar.xz"
-        if [ "$OS" == "freebsd" ]; then
-            TARBALL="https://ziglang.org/download/$VERSION/$ZIGVER.tar.xz"
-        fi
+        TARBALL="https://ziglang.org/download/$VERSION/$ZIGVER.tar.xz"
 
         if [ ! -d "$ZIGVER" ]; then
             curl "$TARBALL" | tar -xJ
@@ -58,7 +55,7 @@ get_zig() {
 get_zig
 
 if [ "$1" == "cdb" ]; then
-    rm -rf zig-cache
+    rm -rf .zig-cache
     rm -rf .cache/cdb
 
     $ZIG build
