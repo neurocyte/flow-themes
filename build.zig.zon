@@ -68,6 +68,10 @@
         .theme_spacedust = .{
             .url = "https://github.com/wallsified/Spacedust-VSCode/archive/160a0e266a369c336d5393c93decc078c636fc3d.tar.gz",
             .hash = "122027fbeddeabd06d699e81c408dadf17d60c5d538e13e7c69f2685ca63262a2bda",
+        },
+        .theme_catppuccin = .{
+            .url = "https://github.com/catppuccin/vscode/archive/75805b74e052fe6673a1bdf3948bfa5b481edb7e.tar.gz",
+            .hash = "1220bee1c4901235e1653b324d2ee1bea69ee9c88d64a12f599aa31ad180cfef0857",
         }
     },
     .paths = .{
