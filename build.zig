@@ -80,8 +80,8 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "everforest", "themes/everforest-light.json");
     theme_file(b, exe, "nord", "themes/nord-color-theme.json");
     theme_file(b, exe, "spacedust", "themes/Spacedust-color-theme.json");
-    theme_file(b, exe, "catppuccin", "frappe.json");
-    theme_file(b, exe, "catppuccin", "latte.json");
-    theme_file(b, exe, "catppuccin", "macchiato.json");
-    theme_file(b, exe, "catppuccin", "mocha.json");
+    theme_file(b, exe, "catppuccin", "themes/frappe.json");
+    theme_file(b, exe, "catppuccin", "themes/latte.json");
+    theme_file(b, exe, "catppuccin", "themes/macchiato.json");
+    theme_file(b, exe, "catppuccin", "themes/mocha.json");
 }

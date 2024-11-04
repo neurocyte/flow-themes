@@ -70,8 +70,8 @@
             .hash = "122027fbeddeabd06d699e81c408dadf17d60c5d538e13e7c69f2685ca63262a2bda",
         },
         .theme_catppuccin = .{
-            .url = "https://github.com/catppuccin/vscode/archive/75805b74e052fe6673a1bdf3948bfa5b481edb7e.tar.gz",
-            .hash = "1220bee1c4901235e1653b324d2ee1bea69ee9c88d64a12f599aa31ad180cfef0857",
+            .url = "https://github.com/neurocyte/catppuccin-flow/releases/download/catppuccin-vsc-v3.15.2/vscode-3.15.2.tgz",
+            .hash = "122076748115e6aa1eb16fe79f525f48b62e5783af943026544806e15ecc711daa7e",
         }
     },
     .paths = .{

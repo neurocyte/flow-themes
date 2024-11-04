@@ -43,9 +43,9 @@ pub const theme_files = [_]theme_file{
     THEME("themes/everforest-dark.json"),
     THEME("themes/nord-color-theme.json"),
     THEME("themes/Spacedust-color-theme.json"),
-    THEME("frappe.json"),
-    THEME("macchiato.json"),
-    THEME("mocha.json"),
+    THEME("themes/frappe.json"),
+    THEME("themes/macchiato.json"),
+    THEME("themes/mocha.json"),
 
     // light themes
 
@@ -65,7 +65,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/rose-pine-dawn-color-theme.json"),
     THEME("themes/adwaita-light.json"),
     THEME("themes/everforest-light.json"),
-    THEME("latte.json"),
+    THEME("themes/latte.json"),
 };
 
 fn THEME(comptime file_path: []const u8) theme_file {
