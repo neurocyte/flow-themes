@@ -323,16 +323,13 @@ fn find_in_colors(name: []const u8, iter: *[]const u8) ?Color {
 fn parse_color_value_checked(s: []const u8) !Color {
     const parseInt = @import("std").fmt.parseInt;
     if (s[0] != '#' or s.len < 7 or s.len > 9) return error.Failed;
-    var r = try parseInt(u32, s[1..3], 16);
-    var b = try parseInt(u32, s[3..5], 16);
-    var g = try parseInt(u32, s[5..7], 16);
-    if (s.len > 7) {
-        const a = try parseInt(u8, s[7..], 16);
-        r = (r * a) / 256;
-        b = (b * a) / 256;
-        g = (g * a) / 256;
-    }
-    return @truncate((r << 16) + (b << 8) + g);
+    const r = try parseInt(u32, s[1..3], 16);
+    const b = try parseInt(u32, s[3..5], 16);
+    const g = try parseInt(u32, s[5..7], 16);
+    var color: Color = .{ .color = @truncate((r << 16) + (b << 8) + g) };
+    if (s.len > 7)
+        color.alpha = try parseInt(u8, s[7..], 16);
+    return color;
 }
 
 fn parse_color_value(s: []const u8) Color {
@@ -350,32 +347,6 @@ fn parse_color_value_4bit(s: []const u8) Color {
         std.debug.print("failed to parse expanded color value: {s} {s}\n", .{ s, expanded });
         unreachable;
     };
-}
-
-fn apply_alpha_value(c: Color, a: u8) Color {
-    var r: u32 = @as(u8, @truncate((c >> 16)));
-    var b: u32 = @as(u8, @truncate((c >> 8)));
-    var g: u32 = @as(u8, @truncate(c));
-    r = (r * a) / 256;
-    b = (b * a) / 256;
-    g = (g * a) / 256;
-    return @truncate((r << 16) + (b << 8) + g);
-}
-
-fn apply_alpha_value_opt(c: ?Color, a: u8) ?Color {
-    return if (c) |v| apply_alpha_value(v, a) else c;
-}
-
-fn apply_alpha_value_fg(sty_: Style, a: u8) Style {
-    var sty = sty_;
-    sty.fg = apply_alpha_value_opt(sty.fg, a);
-    return sty;
-}
-
-fn apply_alpha_value_bg(sty_: Style, a: u8) Style {
-    var sty = sty_;
-    sty.bg = apply_alpha_value_opt(sty.bg, a);
-    return sty;
 }
 
 const derive_style = struct {
@@ -606,22 +577,22 @@ const defaults = struct {
 
     // registerColor('foreground', { dark: '#CCCCCC', light: '#616161', hcDark: '#FFFFFF', hcLight: '#292929' }, nls.localize('foreground', "Overall foreground color. This color is only used if not overridden by a component."));
     fn foreground(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xCCCCCC, 0x616161 })[type_idx];
+        return ([2]Color{ .{ .color = 0xCCCCCC }, .{ .color = 0x616161 } })[type_idx];
     }
 
     // registerColor('editor.foreground', { light: '#333333', dark: '#BBBBBB', hcDark: Color.white, hcLight: foreground }, nls.localize('editorForeground', "Editor default foreground color."));
     fn @"editor.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xBBBBBB, 0x333333 })[type_idx];
+        return ([2]Color{ .{ .color = 0xBBBBBB }, .{ .color = 0x333333 } })[type_idx];
     }
 
     // registerColor('editor.background', { light: '#ffffff', dark: '#1E1E1E', hcDark: Color.black, hcLight: Color.white }, nls.localize('editorBackground', "Editor background color."));
     fn @"editor.background"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x1E1E1E, 0xffffff })[type_idx];
+        return ([2]Color{ .{ .color = 0x1E1E1E }, .{ .color = 0xffffff } })[type_idx];
     }
 
     // registerColor('editorCursor.foreground', { dark: '#AEAFAD', light: Color.black, hcDark: Color.white, hcLight: '#0F4A85' }, nls.localize('caret', 'Color of the editor cursor.'));
     fn @"editorCursor.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xAEAFAD, 0x000000 })[type_idx];
+        return ([2]Color{ .{ .color = 0xAEAFAD }, .{ .color = 0x000000 } })[type_idx];
     }
 
     // registerColor('editorCursor.background', null, nls.localize('editorCursorBackground', 'The background color of the editor cursor. Allows customizing the color of a character overlapped by a block cursor.'));
@@ -636,7 +607,7 @@ const defaults = struct {
 
     // registerColor('editorError.foreground', { dark: '#F14C4C', light: '#E51400', hcDark: '#F48771', hcLight: '#B5200D' }, nls.localize('editorError.foreground', 'Foreground color of error squigglies in the editor.'));
     fn @"editorError.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xF14C4C, 0xE51400 })[type_idx];
+        return ([2]Color{ .{ .color = 0xF14C4C }, .{ .color = 0xE51400 } })[type_idx];
     }
 
     // registerColor('editorError.background', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('editorError.background', 'Background color of error text in the editor. The color must not be opaque so as not to hide underlying decorations.'), true);
@@ -646,7 +617,7 @@ const defaults = struct {
 
     // registerColor('editorWarning.foreground', { dark: '#CCA700', light: '#BF8803', hcDark: '#FFD370', hcLight: '#895503' }, nls.localize('editorWarning.foreground', 'Foreground color of warning squigglies in the editor.'));
     fn @"editorWarning.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xCCA700, 0xBF8803 })[type_idx];
+        return ([2]Color{ .{ .color = 0xCCA700 }, .{ .color = 0xBF8803 } })[type_idx];
     }
 
     // registerColor('editorWarning.background', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('editorWarning.background', 'Background color of warning text in the editor. The color must not be opaque so as not to hide underlying decorations.'), true);
@@ -656,7 +627,7 @@ const defaults = struct {
 
     // registerColor('editorInfo.foreground', { dark: '#3794FF', light: '#1a85ff', hcDark: '#3794FF', hcLight: '#1a85ff' }, nls.localize('editorInfo.foreground', 'Foreground color of info squigglies in the editor.'));
     fn @"editorInfo.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x3794FF, 0x1a85ff })[type_idx];
+        return ([2]Color{ .{ .color = 0x3794FF }, .{ .color = 0x1a85ff } })[type_idx];
     }
 
     // registerColor('editorInfo.background', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('editorInfo.background', 'Background color of info text in the editor. The color must not be opaque so as not to hide underlying decorations.'), true);
@@ -666,7 +637,7 @@ const defaults = struct {
 
     // registerColor('editorHint.foreground', { dark: Color.fromHex('#eeeeee').transparent(0.7), light: '#6c6c6c', hcDark: null, hcLight: null }, nls.localize('editorHint.foreground', 'Foreground color of hint squigglies in the editor.'));
     fn @"editorHint.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ apply_alpha_value(0xeeeeee, 0xb3), 0x6c6c6c })[type_idx];
+        return ([2]Color{ .{ .color = 0xeeeeee, .alpha = 0xb3 }, .{ .color = 0x6c6c6c } })[type_idx];
     }
 
     // none
@@ -676,12 +647,12 @@ const defaults = struct {
 
     // registerColor('editor.findMatchBackground', { light: '#A8AC94', dark: '#515C6A', hcDark: null, hcLight: null }, nls.localize('editorFindMatch', "Color of the current search match."));
     fn @"editor.findMatchBackground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x515C6A, 0xA8AC94 })[type_idx];
+        return ([2]Color{ .{ .color = 0x515C6A }, .{ .color = 0xA8AC94 } })[type_idx];
     }
 
     // registerColor('editor.findMatchHighlightBackground', { light: '#EA5C0055', dark: '#EA5C0055', hcDark: null, hcLight: null }, nls.localize('findMatchHighlight', "Color of the other search matches. The color must not be opaque so as not to hide underlying decorations."), true);
     fn @"editor.findMatchHighlightBackground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xEA5C00, 0xEA5C00 })[type_idx]; //FIXME: alpha?
+        return ([2]Color{ .{ .color = 0xEA5C00 }, .{ .color = 0xEA5C00 } })[type_idx];
     }
 
     // registerColor('editor.selectionForeground', { light: null, dark: null, hcDark: '#000000', hcLight: Color.white }, nls.localize('editorSelectionForeground', "Color of the selected text for high contrast."));
@@ -691,7 +662,7 @@ const defaults = struct {
 
     // registerColor('editor.selectionBackground', { light: '#ADD6FF', dark: '#264F78', hcDark: '#f3f518', hcLight: '#0F4A85' }, nls.localize('editorSelectionBackground', "Color of the editor selection."));
     fn @"editor.selectionBackground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x264F78, 0xADD6FF })[type_idx];
+        return ([2]Color{ .{ .color = 0x264F78 }, .{ .color = 0xADD6FF } })[type_idx];
     }
 
     // registerColor('sideBar.foreground', { dark: null, light: null, hcDark: null, hcLight: null }, localize('sideBarForeground', "Side bar foreground color. The side bar is the container for views like explorer and search."));
@@ -701,37 +672,37 @@ const defaults = struct {
 
     // registerColor('sideBar.background', { dark: '#252526', light: '#F3F3F3', hcDark: '#000000', hcLight: '#FFFFFF' }, localize('sideBarBackground', "Side bar background color. The side bar is the container for views like explorer and search."));
     fn @"sideBar.background"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x252526, 0xF3F3F3 })[type_idx];
+        return ([2]Color{ .{ .color = 0x252526 }, .{ .color = 0xF3F3F3 } })[type_idx];
     }
 
     // registerColor('scrollbar.shadow', { dark: '#000000', light: '#DDDDDD', hcDark: null, hcLight: null }, nls.localize('scrollbarShadow', "Scrollbar shadow to indicate that the view is scrolled."));
     fn @"scrollbar.shadow"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x000000, 0xDDDDDD })[type_idx];
+        return ([2]Color{ .{ .color = 0x000000 }, .{ .color = 0xDDDDDD } })[type_idx];
     }
 
     // registerColor('scrollbarSlider.background', { dark: Color.fromHex('#797979').transparent(0.4), light: Color.fromHex('#646464').transparent(0.4), hcDark: transparent(contrastBorder, 0.6), hcLight: transparent(contrastBorder, 0.4) }, nls.localize('scrollbarSliderBackground', "Scrollbar slider background color."));
     fn @"scrollbarSlider.background"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x797979, 0x646464 })[type_idx]; //FIXME: alpha?
+        return ([2]Color{ .{ .color = 0x797979 }, .{ .color = 0x646464 } })[type_idx];
     }
 
     // registerColor('scrollbarSlider.hoverBackground', { dark: Color.fromHex('#646464').transparent(0.7), light: Color.fromHex('#646464').transparent(0.7), hcDark: transparent(contrastBorder, 0.8), hcLight: transparent(contrastBorder, 0.8) }, nls.localize('scrollbarSliderHoverBackground', "Scrollbar slider background color when hovering."));
     fn @"scrollbarSlider.hoverBackground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x646464, 0x646464 })[type_idx]; //FIXME: alpha?
+        return ([2]Color{ .{ .color = 0x646464 }, .{ .color = 0x646464 } })[type_idx];
     }
 
     // registerColor('scrollbarSlider.activeBackground', { dark: Color.fromHex('#BFBFBF').transparent(0.4), light: Color.fromHex('#000000').transparent(0.6), hcDark: contrastBorder, hcLight: contrastBorder }, nls.localize('scrollbarSliderActiveBackground', "Scrollbar slider background color when clicked on."));
     fn @"scrollbarSlider.activeBackground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xBFBFBF, 0x000000 })[type_idx]; //FIXME: alpha?
+        return ([2]Color{ .{ .color = 0xBFBFBF }, .{ .color = 0x000000 } })[type_idx];
     }
 
     // registerColor('statusBar.foreground', { dark: '#FFFFFF', light: '#FFFFFF', hcDark: '#FFFFFF', hcLight: editorForeground }, localize('statusBarForeground', "Status bar foreground color when a workspace or folder is opened. The status bar is shown in the bottom of the window."));
     fn @"statusBar.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xFFFFFF, 0xFFFFFF })[type_idx];
+        return ([2]Color{ .{ .color = 0xFFFFFF }, .{ .color = 0xFFFFFF } })[type_idx];
     }
 
     // registerColor('statusBar.background', { dark: '#007ACC', light: '#007ACC', hcDark: null, hcLight: null, }, localize('statusBarBackground', "Status bar background color when a workspace or folder is opened. The status bar is shown in the bottom of the window."));
     fn @"statusBar.background"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x007ACC, 0x007ACC })[type_idx];
+        return ([2]Color{ .{ .color = 0x007ACC }, .{ .color = 0x007ACC } })[type_idx];
     }
 
     // registerColor('statusBarItem.hoverForeground', { dark: STATUS_BAR_FOREGROUND, light: STATUS_BAR_FOREGROUND, hcDark: STATUS_BAR_FOREGROUND, hcLight: STATUS_BAR_FOREGROUND }, localize('statusBarItemHoverForeground', "Status bar item foreground color when hovering. The status bar is shown in the bottom of the window."));
@@ -741,23 +712,23 @@ const defaults = struct {
 
     // registerColor('statusBarItem.hoverBackground', { dark: Color.white.transparent(0.12), light: Color.white.transparent(0.12), hcDark: Color.white.transparent(0.12), hcLight: Color.black.transparent(0.12) }, localize('statusBarItemHoverBackground', "Status bar item background color when hovering. The status bar is shown in the bottom of the window."));
     fn @"statusBarItem.hoverBackground"(type_idx: usize, cb: []const u8) ?Color {
-        return apply_alpha_value_bg(derive_style.statusbar(type_idx, cb), 256 * 12 / 100).bg; //FIXME: alpha?
+        return .{ .color = derive_style.statusbar(type_idx, cb).bg.?.color, .alpha = 256 * 12 / 100 };
     }
 
     // registerColor('editorWhitespace.foreground', { dark: '#e3e4e229', light: '#33333333', hcDark: '#e3e4e229', hcLight: '#CCCCCC' }, nls.localize('editorWhitespaces', 'Color of whitespace characters in the editor.'));
     fn @"editorWhitespace.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ apply_alpha_value(0xe3e4e2, 0x29), apply_alpha_value(0x333333, 0x33) })[type_idx]; //FIXME: alpha?
+        return ([2]Color{ .{ .color = 0xe3e4e2, .alpha = 0x29 }, .{ .color = 0x333333, .alpha = 0x33 } })[type_idx];
     }
 
     // registerColor('editorLineNumber.foreground', { dark: '#858585', light: '#237893', hcDark: Color.white, hcLight: '#292929' }, nls.localize('editorLineNumbers', 'Color of editor line numbers.'));
     fn @"editorLineNumber.foreground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0x858585, 0x237893 })[type_idx];
+        return ([2]Color{ .{ .color = 0x858585 }, .{ .color = 0x237893 } })[type_idx];
     }
 
     // registerColor('editorLineNumber.activeForeground', { dark: deprecatedEditorActiveLineNumber, light: deprecatedEditorActiveLineNumber, hcDark: deprecatedEditorActiveLineNumber, hcLight: deprecatedEditorActiveLineNumber }, nls.localize('editorActiveLineNumber', 'Color of editor active line number'));
     // registerColor('editorActiveLineNumber.foreground', { dark: '#c6c6c6', light: '#0B216F', hcDark: activeContrastBorder, hcLight: activeContrastBorder }, nls.localize('editorActiveLineNumber', 'Color of editor active line number'), false, nls.localize('deprecatedEditorActiveLineNumber', 'Id is deprecated. Use \'editorLineNumber.activeForeground\' instead.'));
     fn @"editorLineNumber.activeForeground"(type_idx: usize, _: []const u8) Color {
-        return ([2]Color{ 0xc6c6c6, 0x0B216F })[type_idx];
+        return ([2]Color{ .{ .color = 0xc6c6c6 }, .{ .color = 0x0B216F } })[type_idx];
     }
 
     // registerColor('editorGutter.background', { dark: editorBackground, light: editorBackground, hcDark: editorBackground, hcLight: editorBackground }, nls.localize('editorGutter', 'Background color of the editor gutter. The gutter contains the glyph margins and the line numbers.'));
@@ -767,12 +738,12 @@ const defaults = struct {
 
     // registerColor('editorGutter.modifiedBackground', { dark: '#1B81A8', light: '#2090D3', hcDark: '#1B81A8',	hcLight: '#2090D3'}, nls.localize('editorGutterModifiedBackground', "Editor gutter background color for lines that are modified."));
     fn @"editorGutter.modifiedBackground"(type_idx: usize, _: []const u8) ?Color {
-        return ([2]Color{ 0x1B81A8, 0x2090D3 })[type_idx];
+        return ([2]Color{ .{ .color = 0x1B81A8 }, .{ .color = 0x2090D3 } })[type_idx];
     }
 
     // registerColor('editorGutter.addedBackground', { dark: '#487E02', light: '#48985D', hcDark: '#487E02', hcLight: '#48985D' }, nls.localize('editorGutterAddedBackground', "Editor gutter background color for lines that are added."));
     fn @"editorGutter.addedBackground"(type_idx: usize, _: []const u8) ?Color {
-        return ([2]Color{ 0x487E02, 0x48985D })[type_idx];
+        return ([2]Color{ .{ .color = 0x487E02 }, .{ .color = 0x48985D } })[type_idx];
     }
 
     // registerColor('editorGutter.deletedBackground', { dark: editorErrorForeground, light: editorErrorForeground, hcDark: editorErrorForeground, hcLight: editorErrorForeground }, nls.localize('editorGutterDeletedBackground', "Editor gutter background color for lines that are deleted."));
@@ -787,12 +758,12 @@ const defaults = struct {
 
     // registerColor('editorWidget.background', { dark: '#252526', light: '#F3F3F3', hcDark: '#0C141F', hcLight: Color.white }, nls.localize('editorWidgetBackground', 'Background color of editor widgets, such as find/replace.'));
     fn @"editorWidget.background"(type_idx: usize, _: []const u8) ?Color {
-        return ([2]Color{ 0x252526, 0xF3F3F3 })[type_idx];
+        return ([2]Color{ .{ .color = 0x252526 }, .{ .color = 0xF3F3F3 } })[type_idx];
     }
 
     // registerColor('editorWidget.border', { dark: '#454545', light: '#C8C8C8', hcDark: contrastBorder, hcLight: contrastBorder }, nls.localize('editorWidgetBorder', 'Border color of editor widgets. The color is only used if the widget chooses to have a border and if the color is not overridden by a widget.'));
     fn @"editorWidget.border"(type_idx: usize, _: []const u8) ?Color {
-        return ([2]Color{ 0x454545, 0xC8C8C8 })[type_idx];
+        return ([2]Color{ .{ .color = 0x454545 }, .{ .color = 0xC8C8C8 } })[type_idx];
     }
 
     // registerColor('input.foreground', { dark: foreground, light: foreground, hcDark: foreground, hcLight: foreground }, nls.localize('inputBoxForeground', "Input box foreground."));
@@ -802,7 +773,7 @@ const defaults = struct {
 
     // registerColor('input.background', { dark: '#3C3C3C', light: Color.white, hcDark: Color.black, hcLight: Color.white }, nls.localize('inputBoxBackground', "Input box background."));
     fn @"input.background"(type_idx: usize, _: []const u8) ?Color {
-        return ([2]Color{ 0x3C3C3C, 0xFFFFFF })[type_idx];
+        return ([2]Color{ .{ .color = 0x3C3C3C }, .{ .color = 0xFFFFFF } })[type_idx];
     }
 
     // registerColor('input.border', { dark: null, light: null, hcDark: contrastBorder, hcLight: contrastBorder }, nls.localize('inputBoxBorder', "Input box border."));
@@ -812,27 +783,27 @@ const defaults = struct {
 
     // registerColor('input.placeholderForeground', { light: transparent(foreground, 0.5), dark: transparent(foreground, 0.5), hcDark: transparent(foreground, 0.7), hcLight: transparent(foreground, 0.7) }, nls.localize('inputPlaceholderForeground', "Input box foreground color for placeholder text."));
     fn @"input.placeholderForeground"(type_idx: usize, cb: []const u8) ?Color {
-        return apply_alpha_value_fg(derive_style.editor(type_idx, cb), 256 / 2).fg;
+        return .{ .color = derive_style.editor(type_idx, cb).fg.?.color, .alpha = 256 / 2 };
     }
 
     // registerColor('inputOption.activeForeground', { dark: Color.white, light: Color.black, hcDark: foreground, hcLight: foreground }, nls.localize('inputOption.activeForeground', "Foreground color of activated options in input fields."));
     fn @"inputOption.activeForeground"(type_idx: usize, _: []const u8) ?Color {
-        return ([2]Color{ 0xFFFFFF, 0x000000 })[type_idx];
+        return ([2]Color{ .{ .color = 0xFFFFFF }, .{ .color = 0x000000 } })[type_idx];
     }
 
     // registerColor('focusBorder', { dark: '#007FD4', light: '#0090F1', hcDark: '#F38518', hcLight: '#006BBD' }, nls.localize('focusBorder', "Overall border color for focused elements. This color is only used if not overridden by a component."));
     fn focusBorder(type_idx: usize, _: []const u8) ?Color {
-        return ([2]Color{ 0x007FD4, 0x0090F1 })[type_idx];
+        return ([2]Color{ .{ .color = 0x007FD4 }, .{ .color = 0x0090F1 } })[type_idx];
     }
 
     // registerColor('inputOption.activeBackground', { dark: transparent(focusBorder, 0.4), light: transparent(focusBorder, 0.2), hcDark: Color.transparent, hcLight: Color.transparent }, nls.localize('inputOption.activeBackground', "Background hover color of options in input fields."));
     fn @"inputOption.activeBackground"(type_idx: usize, cb: []const u8) ?Color {
-        return ([2]Color{ apply_alpha_value(focusBorder(0, cb).?, 256 * 40 / 100), apply_alpha_value(focusBorder(1, cb).?, 256 * 20 / 100) })[type_idx];
+        return ([2]Color{ .{ .color = focusBorder(0, cb).?.color, .alpha = 256 * 40 / 100 }, .{ .color = focusBorder(1, cb).?.color, .alpha = 256 * 20 / 100 } })[type_idx];
     }
 
     // registerColor('inputOption.hoverBackground', { dark: '#5a5d5e80', light: '#b8b8b850', hcDark: null, hcLight: null }, nls.localize('inputOption.hoverBackground', "Background color of activated options in input fields."));
     fn @"inputOption.hoverBackground"(type_idx: usize, _: []const u8) ?Color {
-        return ([2]Color{ apply_alpha_value(0x5a5d5e, 0x80), apply_alpha_value(0xb8b8b8, 0x50) })[type_idx];
+        return ([2]Color{ .{ .color = 0x5a5d5e, .alpha = 0x80 }, .{ .color = 0xb8b8b8, .alpha = 0x50 } })[type_idx];
     }
 };
 
@@ -844,8 +815,8 @@ fn write_field_string(writer: Writer, name: []const u8, value: []const u8) !void
 
 fn write_Style(writer: Writer, value: Style) !void {
     _ = try writer.print(".{{ ", .{});
-    if (value.fg) |fg| _ = try writer.print(".fg = 0x{x},", .{fg});
-    if (value.bg) |bg| _ = try writer.print(".bg = 0x{x},", .{bg});
+    if (value.fg) |fg| _ = try writer.print(".fg = .{{ .color = 0x{x}, .alpha = 0x{x} }},", .{ fg.color, fg.alpha });
+    if (value.bg) |bg| _ = try writer.print(".bg = .{{ .color = 0x{x}, .alpha = 0x{x} }},", .{ bg.color, bg.alpha });
     if (value.fs) |fs| _ = try writer.print(".fs = .{s},", .{switch (fs) {
         .normal => "normal",
         .bold => "bold",

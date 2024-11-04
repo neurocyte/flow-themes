@@ -35,6 +35,6 @@ input_option_hover: Style,
 
 pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };
 pub const Style = struct { fg: ?Color = null, bg: ?Color = null, fs: ?FontStyle = null };
-pub const Color = u24;
+pub const Color = struct { color: u24, alpha: u8 = 0xFF };
 pub const Token = struct { id: usize, style: Style };
 pub const Tokens = []const Token;
