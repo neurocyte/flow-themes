@@ -5,6 +5,8 @@ tokens: Tokens,
 
 editor: Style,
 editor_cursor: Style,
+editor_cursor_primary: Style,
+editor_cursor_secondary: Style,
 editor_line_highlight: Style,
 editor_error: Style,
 editor_warning: Style,

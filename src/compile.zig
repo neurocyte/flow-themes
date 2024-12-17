@@ -57,6 +57,8 @@ fn load_json(theme_: *theme_file) theme {
         .tokens = to_token_array(load_token_colors(file_name, cb)),
         .editor = derive_style.editor(type_idx, cb),
         .editor_cursor = derive_style.editor_cursor(type_idx, cb),
+        .editor_cursor_primary = derive_style.editor_cursor_primary(type_idx, cb),
+        .editor_cursor_secondary = derive_style.editor_cursor_secondary(type_idx, cb),
         .editor_line_highlight = derive_style.editor_line_highlight(type_idx, cb),
         .editor_error = derive_style.editor_error(type_idx, cb),
         .editor_warning = derive_style.editor_warning(type_idx, cb),
@@ -374,6 +376,40 @@ const derive_style = struct {
         };
     }
 
+    fn editor_cursor_primary(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("editorMultiCursor.primary.background", cb)) |col|
+                col
+            else if (find_color("terminalCursor.background", cb)) |col|
+                col
+            else
+                defaults.@"editorMultiCursor.primary.background"(type_idx, cb),
+            .bg = if (find_color("editorMultiCursor.primary.foreground", cb)) |col|
+                col
+            else if (find_color("terminalCursor.foreground", cb)) |col|
+                col
+            else
+                defaults.@"editorMultiCursor.primary.foreground"(type_idx, cb),
+        };
+    }
+
+    fn editor_cursor_secondary(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("editorMultiCursor.secondary.background", cb)) |col|
+                col
+            else if (find_color("terminalCursor.background", cb)) |col|
+                col
+            else
+                defaults.@"editorMultiCursor.secondary.background"(type_idx, cb),
+            .bg = if (find_color("editorMultiCursor.secondary.foreground", cb)) |col|
+                col
+            else if (find_color("terminalCursor.foreground", cb)) |col|
+                col
+            else
+                defaults.@"editorMultiCursor.secondary.foreground"(type_idx, cb),
+        };
+    }
+
     fn editor_line_highlight(type_idx: usize, cb: []const u8) Style {
         return .{
             .fg = if (find_color("editor.foreground", cb)) |col| col else defaults.@"editor.foreground"(type_idx, cb),
@@ -599,6 +635,27 @@ const defaults = struct {
     fn @"editorCursor.background"(type_idx: usize, cb: []const u8) ?Color {
         return derive_style.editor(type_idx, cb).bg;
     }
+
+    // registerColor('editorMultiCursor.primary.foreground', editorCursorForeground, nls.localize('editorMultiCursorPrimaryForeground', 'Color of the primary editor cursor when multiple cursors are present.'));
+    fn @"editorMultiCursor.primary.foreground"(type_idx: usize, cb: []const u8) ?Color {
+        return @"editorCursor.foreground"(type_idx, cb);
+    }
+
+    // registerColor('editorMultiCursor.primary.background', editorCursorBackground, nls.localize('editorMultiCursorPrimaryBackground', 'The background color of the primary editor cursor when multiple cursors are present. Allows customizing the color of a character overlapped by a block cursor.'));
+    fn @"editorMultiCursor.primary.background"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.editor(type_idx, cb).bg;
+    }
+
+    // registerColor('editorMultiCursor.secondary.foreground', editorCursorForeground, nls.localize('editorMultiCursorSecondaryForeground', 'Color of secondary editor cursors when multiple cursors are present.'));
+    fn @"editorMultiCursor.secondary.foreground"(type_idx: usize, cb: []const u8) ?Color {
+        return @"editorCursor.foreground"(type_idx, cb);
+    }
+
+    // registerColor('editorMultiCursor.secondary.background', editorCursorBackground, nls.localize('editorMultiCursorSecondaryBackground', 'The background color of secondary editor cursors when multiple cursors are present. Allows customizing the color of a character overlapped by a block cursor.'));
+    fn @"editorMultiCursor.secondary.background"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.editor(type_idx, cb).bg;
+    }
+
 
     // registerColor('editor.lineHighlightBackground', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('lineHighlight', 'Background color for the highlight of line at the cursor position.'));
     fn @"editor.lineHighlightBackground"(type_idx: usize, cb: []const u8) ?Color {
