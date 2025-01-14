@@ -68,6 +68,10 @@
         .theme_catppuccin = .{
             .url = "https://github.com/neurocyte/catppuccin-flow/releases/download/catppuccin-vsc-v3.15.2/vscode-3.15.2.tgz",
             .hash = "122076748115e6aa1eb16fe79f525f48b62e5783af943026544806e15ecc711daa7e",
+        },
+        .theme_mellow = .{
+            .url = "https://github.com/mellow-theme/mellow-theme/archive/00cea86c91a8eb95af09b2cb587a30d52e06ba91.tar.gz",
+            .hash = "122062276c850b37d78f4f981c25c1b14f05d1124429b6e496fe059107c9115d00da",
         }
     },
     .paths = .{

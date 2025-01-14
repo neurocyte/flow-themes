@@ -45,6 +45,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/frappe.json"),
     THEME("themes/macchiato.json"),
     THEME("themes/mocha.json"),
+    THEME("themes/mellow.json"),
 
     // light themes
 
