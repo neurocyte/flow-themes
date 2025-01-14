@@ -42,7 +42,6 @@ pub const theme_files = [_]theme_file{
     THEME("themes/adwaita-dark.json"),
     THEME("themes/everforest-dark.json"),
     THEME("themes/nord-color-theme.json"),
-    THEME("themes/Spacedust-color-theme.json"),
     THEME("themes/frappe.json"),
     THEME("themes/macchiato.json"),
     THEME("themes/mocha.json"),
