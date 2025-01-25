@@ -34,6 +34,9 @@ input_border: Style,
 input_placeholder: Style,
 input_option_active: Style,
 input_option_hover: Style,
+tab_active: Style,
+tab_inactive: Style,
+tab_selected: Style,
 
 pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };
 pub const Style = struct { fg: ?Color = null, bg: ?Color = null, fs: ?FontStyle = null };

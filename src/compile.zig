@@ -86,6 +86,9 @@ fn load_json(theme_: *theme_file) theme {
         .input_placeholder = derive_style.input_placeholder(type_idx, cb),
         .input_option_active = derive_style.input_option_active(type_idx, cb),
         .input_option_hover = derive_style.input_option_hover(type_idx, cb),
+        .tab_active = derive_style.tab_active(type_idx, cb),
+        .tab_inactive = derive_style.tab_inactive(type_idx, cb),
+        .tab_selected = derive_style.tab_selected(type_idx, cb),
     };
 }
 
@@ -606,6 +609,27 @@ const derive_style = struct {
             .bg = if (find_color("inputOption.hoverBackground", cb)) |col| col else defaults.@"inputOption.hoverBackground"(type_idx, cb),
         };
     }
+
+    fn tab_active(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("tab.activeForeground", cb)) |col| col else defaults.@"tab.activeForeground"(type_idx, cb),
+            .bg = if (find_color("tab.activeBackground", cb)) |col| col else defaults.@"tab.activeBackground"(type_idx, cb),
+        };
+    }
+
+    fn tab_inactive(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("tab.inactiveForeground", cb)) |col| col else defaults.@"tab.inactiveForeground"(type_idx, cb),
+            .bg = if (find_color("tab.inactiveBackground", cb)) |col| col else defaults.@"tab.inactiveBackground"(type_idx, cb),
+        };
+    }
+
+    fn tab_selected(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("tab.selectedForeground", cb)) |col| col else defaults.@"tab.selectedForeground"(type_idx, cb),
+            .bg = if (find_color("tab.selectedBackground", cb)) |col| col else defaults.@"tab.selectedBackground"(type_idx, cb),
+        };
+    }
 };
 
 const defaults = struct {
@@ -655,7 +679,6 @@ const defaults = struct {
     fn @"editorMultiCursor.secondary.background"(type_idx: usize, cb: []const u8) ?Color {
         return derive_style.editor(type_idx, cb).bg;
     }
-
 
     // registerColor('editor.lineHighlightBackground', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('lineHighlight', 'Background color for the highlight of line at the cursor position.'));
     fn @"editor.lineHighlightBackground"(type_idx: usize, cb: []const u8) ?Color {
@@ -861,6 +884,43 @@ const defaults = struct {
     // registerColor('inputOption.hoverBackground', { dark: '#5a5d5e80', light: '#b8b8b850', hcDark: null, hcLight: null }, nls.localize('inputOption.hoverBackground', "Background color of activated options in input fields."));
     fn @"inputOption.hoverBackground"(type_idx: usize, _: []const u8) ?Color {
         return ([2]Color{ .{ .color = 0x5a5d5e, .alpha = 0x80 }, .{ .color = 0xb8b8b8, .alpha = 0x50 } })[type_idx];
+    }
+
+    // export const COLOR_THEME_DARK_INITIAL_COLORS = {
+    //     'tab.activeBackground': '#1f1f1f',
+    //     'tab.activeForeground': '#ffffff',
+    // };
+    // export const COLOR_THEME_LIGHT_INITIAL_COLORS = {
+    //     'tab.activeBackground': '#ffffff',
+    //     'tab.activeForeground': '#3b3b3b',
+    // };
+    fn @"tab.activeBackground"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x1f1f1f }, .{ .color = 0xffffff } })[type_idx];
+    }
+
+    fn @"tab.activeForeground"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xffffff }, .{ .color = 0x3b3b3b } })[type_idx];
+    }
+
+    // dark: transparent(TAB_ACTIVE_FOREGROUND, 0.5),
+    // light: transparent(TAB_ACTIVE_FOREGROUND, 0.7),
+    fn @"tab.inactiveForeground"(type_idx: usize, cb: []const u8) ?Color {
+        return ([2]Color{ .{ .color = derive_style.tab_active(type_idx, cb).fg.?.color, .alpha = 256 / 2 }, .{ .color = derive_style.tab_active(type_idx, cb).fg.?.color, .alpha = 256 * 7 / 10 } })[type_idx];
+    }
+
+    // registerColor('tab.inactiveBackground', { dark: '#2D2D2D', light: '#ECECEC', },
+    fn @"tab.inactiveBackground"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x2D2D2D }, .{ .color = 0xECECEC } })[type_idx];
+    }
+
+    // registerColor('tab.selectedBackground', TAB_ACTIVE_BACKGROUND
+    fn @"tab.selectedBackground"(type_idx: usize, cb: []const u8) ?Color {
+        return .{ .color = derive_style.tab_active(type_idx, cb).bg.?.color };
+    }
+
+    // registerColor('tab.selectedForeground', TAB_ACTIVE_FOREGROUND
+    fn @"tab.selectedForeground"(type_idx: usize, cb: []const u8) ?Color {
+        return .{ .color = derive_style.tab_active(type_idx, cb).fg.?.color };
     }
 };
 
