@@ -72,10 +72,15 @@
         .theme_mellow = .{
             .url = "https://github.com/mellow-theme/mellow-theme/archive/00cea86c91a8eb95af09b2cb587a30d52e06ba91.tar.gz",
             .hash = "122062276c850b37d78f4f981c25c1b14f05d1124429b6e496fe059107c9115d00da",
-        }
+        },
+        .theme_zenbones = .{
+            .url = "https://github.com/rpbritton/zenbones.vscode/archive/97c071875576078395a9dc026ec71a5ff8db68ab.tar.gz",
+            .hash = "12205871af8254b098b844d684e13eebe038aca0671f18e051ffeadf350c761d6e18"
+        },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
     },
 }
+
