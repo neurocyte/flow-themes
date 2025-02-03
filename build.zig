@@ -84,4 +84,5 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "catppuccin", "themes/macchiato.json");
     theme_file(b, exe, "catppuccin", "themes/mocha.json");
     theme_file(b, exe, "mellow", "themes/mellow.json");
+    theme_file(b, exe, "zenbones", "extras/vscode/themes/zenbones_dark_default.json");
 }

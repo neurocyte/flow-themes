@@ -46,7 +46,8 @@ pub const theme_files = [_]theme_file{
     THEME("themes/macchiato.json"),
     THEME("themes/mocha.json"),
     THEME("themes/mellow.json"),
-
+    THEME("extras/vscode/themes/zenbones_dark_default.json"),
+   
     // light themes
 
     THEME("themes/1984-light-color-theme.json"),
