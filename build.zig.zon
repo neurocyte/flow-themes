@@ -74,8 +74,8 @@
             .hash = "122062276c850b37d78f4f981c25c1b14f05d1124429b6e496fe059107c9115d00da",
         },
         .theme_zenbones = .{
-            .url = "https://github.com/rpbritton/zenbones.vscode/archive/97c071875576078395a9dc026ec71a5ff8db68ab.tar.gz",
-            .hash = "12205871af8254b098b844d684e13eebe038aca0671f18e051ffeadf350c761d6e18"
+            .url = "https://github.com/rpbritton/zenbones.vscode/archive/c587792a912ac8f81e244d951ad95564ef5b8c0e.tar.gz",
+            .hash = "122053dbc0b7c047e80db931873f4127ce8301eb4b2e779aede2616fc79f3b23abda",
         },
     },
     .paths = .{

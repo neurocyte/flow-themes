@@ -46,8 +46,43 @@ pub const theme_files = [_]theme_file{
     THEME("themes/macchiato.json"),
     THEME("themes/mocha.json"),
     THEME("themes/mellow.json"),
+
+    // zenbones collection dark
+
     THEME("extras/vscode/themes/zenbones_dark_default.json"),
-   
+    THEME("extras/vscode/themes/zenbones_dark_stark.json"),
+    THEME("extras/vscode/themes/zenbones_dark_warm.json"),
+    THEME("extras/vscode/themes/duckbones_default.json"),
+    THEME("extras/vscode/themes/duckbones_stark.json"),
+    THEME("extras/vscode/themes/duckbones_warm.json"),
+    THEME("extras/vscode/themes/forestbones_dark_default.json"),
+    THEME("extras/vscode/themes/forestbones_dark_stark.json"),
+    THEME("extras/vscode/themes/forestbones_dark_warm.json"),
+    THEME("extras/vscode/themes/kanagawabones_default.json"),
+    THEME("extras/vscode/themes/kanagawabones_stark.json"),
+    THEME("extras/vscode/themes/kanagawabones_warm.json"),
+    THEME("extras/vscode/themes/neobones_dark_default.json"),
+    THEME("extras/vscode/themes/neobones_dark_stark.json"),
+    THEME("extras/vscode/themes/neobones_dark_warm.json"),
+    THEME("extras/vscode/themes/nordbones_default.json"),
+    THEME("extras/vscode/themes/nordbones_stark.json"),
+    THEME("extras/vscode/themes/nordbones_warm.json"),
+    THEME("extras/vscode/themes/rosebones_dark_default.json"),
+    THEME("extras/vscode/themes/rosebones_dark_stark.json"),
+    THEME("extras/vscode/themes/rosebones_dark_warm.json"),
+    THEME("extras/vscode/themes/seoulbones_dark_default.json"),
+    THEME("extras/vscode/themes/seoulbones_dark_stark.json"),
+    THEME("extras/vscode/themes/seoulbones_dark_warm.json"),
+    THEME("extras/vscode/themes/tokyobones_dark_default.json"),
+    THEME("extras/vscode/themes/tokyobones_dark_stark.json"),
+    THEME("extras/vscode/themes/tokyobones_dark_warm.json"),
+    THEME("extras/vscode/themes/zenburned_default.json"),
+    THEME("extras/vscode/themes/zenburned_stark.json"),
+    THEME("extras/vscode/themes/zenburned_warm.json"),
+    THEME("extras/vscode/themes/zenwritten_dark_default.json"),
+    THEME("extras/vscode/themes/zenwritten_dark_stark.json"),
+    THEME("extras/vscode/themes/zenwritten_dark_warm.json"),
+
     // light themes
 
     THEME("themes/1984-light-color-theme.json"),
@@ -67,9 +102,36 @@ pub const theme_files = [_]theme_file{
     THEME("themes/adwaita-light.json"),
     THEME("themes/everforest-light.json"),
     THEME("themes/latte.json"),
+
+    // zenbones collection light
+
+    THEME("extras/vscode/themes/zenbones_light_bright.json"),
+    THEME("extras/vscode/themes/zenbones_light_default.json"),
+    THEME("extras/vscode/themes/zenbones_light_dim.json"),
+    THEME("extras/vscode/themes/forestbones_light_bright.json"),
+    THEME("extras/vscode/themes/forestbones_light_default.json"),
+    THEME("extras/vscode/themes/forestbones_light_dim.json"),
+    THEME("extras/vscode/themes/neobones_light_bright.json"),
+    THEME("extras/vscode/themes/neobones_light_default.json"),
+    THEME("extras/vscode/themes/neobones_light_dim.json"),
+    THEME("extras/vscode/themes/rosebones_light_bright.json"),
+    THEME("extras/vscode/themes/rosebones_light_default.json"),
+    THEME("extras/vscode/themes/rosebones_light_dim.json"),
+    THEME("extras/vscode/themes/seoulbones_light_bright.json"),
+    THEME("extras/vscode/themes/seoulbones_light_default.json"),
+    THEME("extras/vscode/themes/seoulbones_light_dim.json"),
+    THEME("extras/vscode/themes/tokyobones_light_bright.json"),
+    THEME("extras/vscode/themes/tokyobones_light_default.json"),
+    THEME("extras/vscode/themes/tokyobones_light_dim.json"),
+    THEME("extras/vscode/themes/vimbones_bright.json"),
+    THEME("extras/vscode/themes/vimbones_default.json"),
+    THEME("extras/vscode/themes/vimbones_dim.json"),
+    THEME("extras/vscode/themes/zenwritten_light_bright.json"),
+    THEME("extras/vscode/themes/zenwritten_light_default.json"),
+    THEME("extras/vscode/themes/zenwritten_light_dim.json"),
 };
 
 fn THEME(comptime file_path: []const u8) theme_file {
-    @setEvalBranchQuota(2000);
+    @setEvalBranchQuota(10000);
     return .{ .file_name = std.fs.path.basename(file_path), .json = @embedFile(file_path) };
 }

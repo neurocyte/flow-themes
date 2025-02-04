@@ -316,27 +316,11 @@ fn find_in_colors(name: []const u8, iter: *[]const u8) ?Color {
     var len = cbor.decodeMapHeader(iter) catch return null;
     while (len > 0) : (len -= 1) {
         var field_name: []const u8 = undefined;
-        // Try to match field name, skip if not a string
-        if (cbor.matchString(iter, &field_name) catch false) {
-            // If we find the field we're looking for
-            if (eql(u8, field_name, name)) {
-                var value: []const u8 = undefined;
-                // Try to match the value as string
-                if (cbor.matchString(iter, &value) catch false) {
-                    return parse_color_value(value);
-                } else {
-                    // Skip non-string value
-                    cbor.skipValue(iter) catch return null;
-                }
-            } else {
-                // Skip value for non-matching field
-                cbor.skipValue(iter) catch return null;
-            }
-        } else {
-            // Skip both non-string field name and its value
-            cbor.skipValue(iter) catch return null;
-            cbor.skipValue(iter) catch return null;
-        }
+        var value: []const u8 = undefined;
+        if (!(cbor.matchString(iter, &field_name) catch unreachable)) unreachable;
+        if (!(cbor.matchString(iter, &value) catch unreachable)) unreachable;
+        if (eql(u8, field_name, name))
+            return parse_color_value(value);
     }
     return null;
 }
