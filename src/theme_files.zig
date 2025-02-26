@@ -46,6 +46,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/macchiato.json"),
     THEME("themes/mocha.json"),
     THEME("themes/mellow.json"),
+    THEME("themes/Hypersubatomic-color-theme.json"),
 
     // zenbones collection dark
 

@@ -142,4 +142,5 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "zenbones", "extras/vscode/themes/zenwritten_light_bright.json");
     theme_file(b, exe, "zenbones", "extras/vscode/themes/zenwritten_light_default.json");
     theme_file(b, exe, "zenbones", "extras/vscode/themes/zenwritten_light_dim.json");
+    theme_file(b, exe, "hypersubatomic", "themes/Hypersubatomic-color-theme.json");
 }

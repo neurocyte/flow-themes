@@ -77,6 +77,10 @@
             .url = "https://github.com/rpbritton/zenbones.vscode/archive/c587792a912ac8f81e244d951ad95564ef5b8c0e.tar.gz",
             .hash = "122053dbc0b7c047e80db931873f4127ce8301eb4b2e779aede2616fc79f3b23abda",
         },
+        .theme_hypersubatomic = .{
+            .url = "https://github.com/usgraphics/hypersubatomic-vscode-theme/archive/ef172ddf88c8e31e1541461b3eea127cc81fa886.tar.gz",
+            .hash = "1220c88ea76ff21dbba04c0cb9509a7dff1fb5efcae6c579250a18748fafefdef657",
+        },
     },
     .paths = .{
         "build.zig",
