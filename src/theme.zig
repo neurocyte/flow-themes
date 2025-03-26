@@ -1,7 +1,6 @@
 name: []const u8,
 description: []const u8,
 type: []const u8,
-tokens: Tokens,
 
 editor: Style,
 editor_cursor: Style,
@@ -37,6 +36,8 @@ input_option_hover: Style,
 tab_active: Style,
 tab_inactive: Style,
 tab_selected: Style,
+
+tokens: Tokens,
 
 pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };
 pub const Style = struct { fg: ?Color = null, bg: ?Color = null, fs: ?FontStyle = null };
