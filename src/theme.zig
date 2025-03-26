@@ -41,6 +41,39 @@ tokens: Tokens,
 
 pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };
 pub const Style = struct { fg: ?Color = null, bg: ?Color = null, fs: ?FontStyle = null };
-pub const Color = struct { color: u24, alpha: u8 = 0xFF };
+pub const Color = struct {
+    color: u24,
+    alpha: u8 = 0xFF,
+
+    pub fn jsonStringify(self: @This(), writer: anytype) !void {
+        try writer.beginObject();
+        try writer.objectField("color");
+        try writer.print("\"#{X:0>6}\"", .{self.color});
+        try writer.objectField("alpha");
+        try writer.print("{d}", .{self.alpha});
+        try writer.endObject();
+    }
+
+    pub fn jsonParse(_: std.mem.Allocator, source: anytype, _: std.json.ParseOptions) !@This() {
+        try source.beginObject();
+        try source.objectField("color");
+
+        const hex_str = try source.nextString();
+        if (hex_str.len != 7 or hex_str[0] != '#') return error.InvalidColorValue;
+        const color = try std.fmt.parseInt(u24, hex_str[1..], 16);
+
+        try source.objectField("alpha");
+        const alpha = try source.nextInteger();
+
+        try source.endObject();
+
+        return Color{
+            .color = color,
+            .alpha = alpha,
+        };
+    }
+};
 pub const Token = struct { id: usize, style: Style };
 pub const Tokens = []const Token;
+
+const std = @import("std");
