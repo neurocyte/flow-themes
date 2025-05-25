@@ -81,6 +81,10 @@
             .url = "https://github.com/usgraphics/hypersubatomic-vscode-theme/archive/ef172ddf88c8e31e1541461b3eea127cc81fa886.tar.gz",
             .hash = "1220c88ea76ff21dbba04c0cb9509a7dff1fb5efcae6c579250a18748fafefdef657",
         },
+        .theme_base16 = .{
+            .url = "https://github.com/pzinovkin/base16-vscode/archive/f25f8495f50ef4481920ff3db7efec3f28b9fb2f.tar.gz",
+            .hash = "1220a66a6ef581de3f480883b11bf049956ca0b2130b14a84a7f1b8ca05123088794",
+        },
     },
     .paths = .{
         "build.zig",
