@@ -142,6 +142,9 @@ fn add_themes(b: *std.Build, exe: anytype) void {
     theme_file(b, exe, "zenbones", "extras/vscode/themes/zenwritten_light_bright.json");
     theme_file(b, exe, "zenbones", "extras/vscode/themes/zenwritten_light_default.json");
     theme_file(b, exe, "zenbones", "extras/vscode/themes/zenwritten_light_dim.json");
+    theme_file(b, exe, "kanagawa", "themes/kanagawa-wave-color-theme.json");
+    theme_file(b, exe, "kanagawa", "themes/kanagawa-dragon-color-theme.json");
+    theme_file(b, exe, "kanagawa", "themes/kanagawa-lotus-color-theme.json");
     theme_file(b, exe, "hypersubatomic", "themes/Hypersubatomic-color-theme.json");
     theme_file(b, exe, "base16", "themes/3024-dark.json");
     theme_file(b, exe, "base16", "themes/3024-light.json");
