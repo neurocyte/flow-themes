@@ -1,6 +1,8 @@
 .{
-    .name = "flow-themes",
+    .name = .flow_themes,
     .version = "0.0.1",
+    .minimum_zig_version = "0.15.1",
+    .fingerprint = 0x4c6fd5b6412e42ff,
 
     .dependencies = .{
 
@@ -88,6 +90,10 @@
         .theme_base16 = .{
             .url = "https://github.com/pzinovkin/base16-vscode/archive/f25f8495f50ef4481920ff3db7efec3f28b9fb2f.tar.gz",
             .hash = "1220a66a6ef581de3f480883b11bf049956ca0b2130b14a84a7f1b8ca05123088794",
+        },
+        .cbor = .{
+            .url = "git+https://github.com/neurocyte/cbor?ref=master#7d2eeb68c8a2fb3f4d6baad6cc04c521b92974c0",
+            .hash = "cbor-1.0.0-RcQE_AswAQAPlqBCZXYQf9DZXn-0Ubt8Mk03ZcJWcsAG",
         },
     },
     .paths = .{

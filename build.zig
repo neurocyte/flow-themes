@@ -3,12 +3,15 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
 
-    const cbor_mod = b.createModule(.{ .root_source_file = b.path("src/cbor.zig") });
+    const cbor_dep = b.dependency("cbor", .{ .target = target });
+    const cbor_mod = cbor_dep.module("cbor");
     const theme_mod = b.createModule(.{ .root_source_file = b.path("src/theme.zig") });
     const themes_compile = b.addExecutable(.{
         .name = "themes_compile",
-        .target = target,
-        .root_source_file = b.path("src/compile.zig"),
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/compile.zig"),
+            .target = target,
+        }),
     });
     add_themes(b, themes_compile);
     themes_compile.root_module.addImport("cbor", cbor_mod);

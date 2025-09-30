@@ -3,7 +3,7 @@ Themes compiler for Flow-Control, the text editor
 
 ## Requirements
 
- - zig 0.13
+ - zig 0.15.1
  - hjson (installed in your PATH)
 
 ## Build

@@ -271,17 +271,17 @@ fn load_scopes_string(tokens: *TokenMap, style: Style, scopes_: []const u8) void
 
 fn to_token_array(tokens: TokenMap) []Token {
     var iter = tokens.iterator();
-    var arr = std.ArrayList(Token).init(allocator);
+    var arr: std.ArrayList(Token) = .empty;
     while (iter.next()) |token|
-        (arr.addOne() catch unreachable).* = Token{ .id = to_scope_id(token.key_ptr.*), .style = token.value_ptr.* };
-    const result = arr.toOwnedSlice() catch unreachable;
+        (arr.addOne(allocator) catch unreachable).* = Token{ .id = to_scope_id(token.key_ptr.*), .style = token.value_ptr.* };
+    const result = arr.toOwnedSlice(allocator) catch unreachable;
     std.sort.pdq(Token, result, {}, compare_tokens);
     return result;
 }
 
 fn to_scope_id(scope: []const u8) usize {
     if (scopes.get(scope)) |id| return id;
-    (scopes_vec.addOne() catch unreachable).* = scope;
+    (scopes_vec.addOne(allocator) catch unreachable).* = scope;
     const id = scopes_vec.items.len - 1;
     scopes.put(scope, id) catch unreachable;
     return id;
@@ -816,7 +816,7 @@ const defaults = struct {
         return derive_style.editor(type_idx, cb).bg;
     }
 
-    // registerColor('editorGutter.modifiedBackground', { dark: '#1B81A8', light: '#2090D3', hcDark: '#1B81A8',	hcLight: '#2090D3'}, nls.localize('editorGutterModifiedBackground', "Editor gutter background color for lines that are modified."));
+    // registerColor('editorGutter.modifiedBackground', { dark: '#1B81A8', light: '#2090D3', hcDark: '#1B81A8', hcLight: '#2090D3'}, nls.localize('editorGutterModifiedBackground', "Editor gutter background color for lines that are modified."));
     fn @"editorGutter.modifiedBackground"(type_idx: usize, _: []const u8) ?Color {
         return ([2]Color{ .{ .color = 0x1B81A8 }, .{ .color = 0x2090D3 } })[type_idx];
     }
@@ -926,11 +926,11 @@ const defaults = struct {
 
 const Writer = std.fs.File.Writer;
 
-fn write_field_string(writer: Writer, name: []const u8, value: []const u8) !void {
+fn write_field_string(writer: *std.Io.Writer, name: []const u8, value: []const u8) !void {
     _ = try writer.print("        .@\"{s}\" = \"{s}\",\n", .{ name, value });
 }
 
-fn write_Style(writer: Writer, value: Style) !void {
+fn write_Style(writer: *std.Io.Writer, value: Style) !void {
     _ = try writer.print(".{{ ", .{});
     if (value.fg) |fg| _ = try writer.print(".fg = .{{ .color = 0x{x}, .alpha = 0x{x} }},", .{ fg.color, fg.alpha });
     if (value.bg) |bg| _ = try writer.print(".bg = .{{ .color = 0x{x}, .alpha = 0x{x} }},", .{ bg.color, bg.alpha });
@@ -945,13 +945,13 @@ fn write_Style(writer: Writer, value: Style) !void {
     _ = try writer.print("}}", .{});
 }
 
-fn write_field_Style(writer: Writer, name: []const u8, value: Style) !void {
+fn write_field_Style(writer: *std.Io.Writer, name: []const u8, value: Style) !void {
     _ = try writer.print("        .@\"{s}\" = ", .{name});
     try write_Style(writer, value);
     _ = try writer.print(",\n", .{});
 }
 
-fn write_field_token_array(writer: Writer, name: []const u8, values: Tokens) !void {
+fn write_field_token_array(writer: *std.Io.Writer, name: []const u8, values: Tokens) !void {
     _ = try writer.print("        .@\"{s}\" = &[_]theme.Token{{ \n", .{name});
     for (values) |value| {
         _ = try writer.print("            .{{ .id = {d}, .style = ", .{value.id});
@@ -961,7 +961,7 @@ fn write_field_token_array(writer: Writer, name: []const u8, values: Tokens) !vo
     _ = try writer.print("        }},\n", .{});
 }
 
-fn write_field(writer: Writer, name: []const u8, value: anytype) !void {
+fn write_field(writer: *std.Io.Writer, name: []const u8, value: anytype) !void {
     return if (@TypeOf(value) == Style)
         write_field_Style(writer, name, value)
     else if (@TypeOf(value) == Tokens)
@@ -970,16 +970,16 @@ fn write_field(writer: Writer, name: []const u8, value: anytype) !void {
         write_field_string(writer, name, value);
 }
 
-fn write_theme(writer: Writer, item: theme) !void {
+fn write_theme(writer: *std.Io.Writer, item: theme) !void {
     _ = try writer.write("    .{\n");
 
-    inline for (@typeInfo(theme).Struct.fields) |field_info|
+    inline for (@typeInfo(theme).@"struct".fields) |field_info|
         try write_field(writer, field_info.name, @field(item, field_info.name));
 
     _ = try writer.write("    },\n");
 }
 
-fn write_all_themes(writer: Writer) !void {
+fn write_all_themes(writer: *std.Io.Writer) !void {
     _ = try writer.write("const theme = @import(\"theme\");\n");
     _ = try writer.write("pub const themes = [_]theme{\n");
     for (&theme_files) |*file| {
@@ -1008,7 +1008,7 @@ pub fn main() !void {
     const arena = arena_state.allocator();
     allocator = arena;
     scopes = ScopeMap.init(allocator);
-    scopes_vec = std.ArrayList([]const u8).init(allocator);
+    scopes_vec = .empty;
 
     const args = try std.process.argsAlloc(arena);
 
@@ -1020,7 +1020,10 @@ pub fn main() !void {
         fatal("unable to open '{s}': {s}", .{ output_file_path, @errorName(err) });
     };
     defer output_file.close();
-    try write_all_themes(output_file.writer());
+    var buf: [4096]u8 = undefined;
+    var writer = output_file.writer(&buf);
+    defer writer.interface.flush() catch @panic("flush failed");
+    try write_all_themes(&writer.interface);
     return std.process.cleanExit();
 }
 
@@ -1039,13 +1042,12 @@ fn hjson(data: []const u8) ![]const u8 {
     try child.stdin.?.writeAll(data);
     child.stdin.?.close();
     child.stdin = null;
-    var out = std.ArrayList(u8).init(allocator);
-    var writer = out.writer();
+    var out: std.Io.Writer.Allocating = .init(allocator);
     var buffer: [256]u8 = undefined;
     while (true) {
         const bytesRead = try child.stdout.?.read(&buffer);
         if (bytesRead == 0) break;
-        try writer.writeAll(buffer[0..bytesRead]);
+        try out.writer.writeAll(buffer[0..bytesRead]);
     }
     const term = child.wait() catch |e| std.debug.panic("error running hjson: {any}", .{e});
     switch (term) {
