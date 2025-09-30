@@ -49,7 +49,6 @@ pub const theme_files = [_]theme_file{
     THEME("themes/Hypersubatomic-color-theme.json"),
     THEME("themes/kanagawa-wave-color-theme.json"),
     THEME("themes/kanagawa-dragon-color-theme.json"),
-    THEME("themes/kanagawa-lotus-color-theme.json"),
 
     // base16 collection dark
 
@@ -148,6 +147,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/adwaita-light.json"),
     THEME("themes/everforest-light.json"),
     THEME("themes/latte.json"),
+    THEME("themes/kanagawa-lotus-color-theme.json"),
 
     // base16 collection light
 
