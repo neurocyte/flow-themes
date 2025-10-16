@@ -226,6 +226,7 @@ fn add_themes(b: *std.Build, exe: anytype) void {
         .{ "base16", "themes/unikitty-dark.json" },
         .{ "base16", "themes/unikitty-light.json" },
         .{ "base16", "themes/woodland-dark.json" },
+        .{ "alabaster", "theme/alabaster-color-theme.json" },
     };
     inline for (theme_list) |list| {
         theme_file(b, exe, list[0], list[1]);

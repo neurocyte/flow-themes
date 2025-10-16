@@ -148,6 +148,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/everforest-light.json"),
     THEME("themes/latte.json"),
     THEME("themes/kanagawa-lotus-color-theme.json"),
+    THEME("theme/alabaster-color-theme.json"),
 
     // base16 collection light
 
