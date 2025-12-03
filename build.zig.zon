@@ -95,6 +95,10 @@
             .url = "git+https://github.com/tonsky/vscode-theme-alabaster?ref=master#bb740b616fe4a573154ae94c6ef4671ee4d21f1e",
             .hash = "N-V-__8AAIh5AwAsHFYIJI8OPGglReL5hjeR4CN6MkG8T2Ec",
         },
+        .theme_ethereal = .{
+            .url = "git+https://github.com/bjarneo/ethereal-vscode.git?ref=main#056e596b48f13306b366b8ca7a70326a924a9cff",
+            .hash = "N-V-__8AAHRcEwAAvSM_ODzsp-La1PE4Ydrg8MR827anf94J",
+        },
         .cbor = .{
             .url = "git+https://github.com/neurocyte/cbor?ref=master#7d2eeb68c8a2fb3f4d6baad6cc04c521b92974c0",
             .hash = "cbor-1.0.0-RcQE_AswAQAPlqBCZXYQf9DZXn-0Ubt8Mk03ZcJWcsAG",

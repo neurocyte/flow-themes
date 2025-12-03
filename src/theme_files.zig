@@ -49,6 +49,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/Hypersubatomic-color-theme.json"),
     THEME("themes/kanagawa-wave-color-theme.json"),
     THEME("themes/kanagawa-dragon-color-theme.json"),
+    THEME("themes/ethereal-color-theme.json"),
 
     // base16 collection dark
 
