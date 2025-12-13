@@ -50,6 +50,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/kanagawa-wave-color-theme.json"),
     THEME("themes/kanagawa-dragon-color-theme.json"),
     THEME("themes/ethereal-color-theme.json"),
+    THEME("editors/visual-studio-code/themes/selenized-dark.json"),
 
     // base16 collection dark
 
@@ -150,6 +151,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/latte.json"),
     THEME("themes/kanagawa-lotus-color-theme.json"),
     THEME("theme/alabaster-color-theme.json"),
+    THEME("editors/visual-studio-code/themes/selenized-light.json"),
 
     // base16 collection light
 

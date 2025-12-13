@@ -99,6 +99,10 @@
             .url = "git+https://github.com/bjarneo/ethereal-vscode.git?ref=main#056e596b48f13306b366b8ca7a70326a924a9cff",
             .hash = "N-V-__8AAHRcEwAAvSM_ODzsp-La1PE4Ydrg8MR827anf94J",
         },
+        .theme_selenized = .{
+            .url = "git+https://github.com/jan-warchol/selenized?ref=master#9a753d5c575c48e29eeb2be745d9571b4cec42b3",
+            .hash = "N-V-__8AAFxeDgAAAxUwDQG7UYFdbTtDN_V7uCgmycPJNr0G",
+        },
         .cbor = .{
             .url = "git+https://github.com/neurocyte/cbor?ref=master#7d2eeb68c8a2fb3f4d6baad6cc04c521b92974c0",
             .hash = "cbor-1.0.0-RcQE_AswAQAPlqBCZXYQf9DZXn-0Ubt8Mk03ZcJWcsAG",

@@ -228,6 +228,8 @@ fn add_themes(b: *std.Build, exe: anytype) void {
         .{ "base16", "themes/woodland-dark.json" },
         .{ "alabaster", "theme/alabaster-color-theme.json" },
         .{ "ethereal", "themes/ethereal-color-theme.json" },
+        .{ "selenized", "editors/visual-studio-code/themes/selenized-dark.json" },
+        .{ "selenized", "editors/visual-studio-code/themes/selenized-light.json" },
     };
     inline for (theme_list) |list| {
         theme_file(b, exe, list[0], list[1]);
