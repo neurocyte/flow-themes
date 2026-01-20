@@ -36,6 +36,8 @@ input_option_hover: Style,
 tab_active: Style,
 tab_inactive: Style,
 tab_selected: Style,
+tab_unfocused_active: Style,
+tab_unfocused_inactive: Style,
 
 tokens: Tokens,
 

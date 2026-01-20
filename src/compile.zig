@@ -89,6 +89,8 @@ fn load_json(theme_: *theme_file) theme {
         .tab_active = derive_style.tab_active(type_idx, cb),
         .tab_inactive = derive_style.tab_inactive(type_idx, cb),
         .tab_selected = derive_style.tab_selected(type_idx, cb),
+        .tab_unfocused_active = derive_style.tab_unfocused_active(type_idx, cb),
+        .tab_unfocused_inactive = derive_style.tab_unfocused_inactive(type_idx, cb),
     };
 }
 
@@ -630,6 +632,20 @@ const derive_style = struct {
             .bg = if (find_color("tab.selectedBackground", cb)) |col| col else defaults.@"tab.selectedBackground"(type_idx, cb),
         };
     }
+
+    fn tab_unfocused_active(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("tab.unfocusedActiveForeground", cb)) |col| col else defaults.@"tab.unfocusedActiveForeground"(type_idx, cb),
+            .bg = if (find_color("tab.unfocusedActiveBackground", cb)) |col| col else defaults.@"tab.unfocusedActiveBackground"(type_idx, cb),
+        };
+    }
+
+    fn tab_unfocused_inactive(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("tab.unfocusedInactiveForeground", cb)) |col| col else defaults.@"tab.unfocusedInactiveForeground"(type_idx, cb),
+            .bg = if (find_color("tab.unfocusedInactiveBackground", cb)) |col| col else defaults.@"tab.unfocusedInactiveBackground"(type_idx, cb),
+        };
+    }
 };
 
 const defaults = struct {
@@ -921,6 +937,28 @@ const defaults = struct {
     // registerColor('tab.selectedForeground', TAB_ACTIVE_FOREGROUND
     fn @"tab.selectedForeground"(type_idx: usize, cb: []const u8) ?Color {
         return .{ .color = derive_style.tab_active(type_idx, cb).fg.?.color };
+    }
+
+    fn @"tab.unfocusedActiveBackground"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.tab_inactive(type_idx, cb).fg;
+    }
+
+    fn @"tab.unfocusedActiveForeground"(type_idx: usize, cb: []const u8) ?Color {
+        return ([2]Color{
+            .{ .color = derive_style.tab_active(type_idx, cb).fg.?.color, .alpha = 256 / 2 },
+            .{ .color = derive_style.tab_active(type_idx, cb).fg.?.color, .alpha = 256 * 7 / 10 },
+        })[type_idx];
+    }
+
+    fn @"tab.unfocusedInactiveBackground"(type_idx: usize, cb: []const u8) ?Color {
+        return derive_style.tab_active(type_idx, cb).fg;
+    }
+
+    fn @"tab.unfocusedInactiveForeground"(type_idx: usize, cb: []const u8) ?Color {
+        return ([2]Color{
+            .{ .color = derive_style.tab_inactive(type_idx, cb).fg.?.color, .alpha = 256 / 2 },
+            .{ .color = derive_style.tab_inactive(type_idx, cb).fg.?.color, .alpha = 256 / 2 },
+        })[type_idx];
     }
 };
 
