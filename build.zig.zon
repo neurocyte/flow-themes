@@ -111,6 +111,10 @@
             .url = "git+https://github.com/neurocyte/cbor?ref=master#66c28df31b8e4448dac7edf063417f2234d6f3c9",
             .hash = "cbor-1.1.0-RcQE_DZMAQBg77bTLWHEMF7QSF2lWUudUbarD9xC5yVJ",
         },
+        .theme_starfall = .{
+            .url = "git+https://github.com/chandan00761/starfall-visual-studio-code?ref=main#ec8d12a160042dea53b651d507fcb41f118fb87c",
+            .hash = "N-V-__8AADJTUQAu-OzC23GuzN_not1GCjo-nEK0kXbtoB7y",
+        },
     },
     .paths = .{
         "build.zig",

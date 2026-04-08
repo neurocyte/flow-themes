@@ -234,6 +234,7 @@ fn add_themes(b: *std.Build, exe: anytype) void {
         .{ "kanso", "themes/kanso-ink.json" },
         .{ "kanso", "themes/kanso-mist.json" },
         .{ "kanso", "themes/kanso-pearl.json" },
+        .{ "starfall", "themes/starfall-color-theme.json"},
     };
     inline for (theme_list) |list| {
         theme_file(b, exe, list[0], list[1]);

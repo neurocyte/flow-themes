@@ -54,6 +54,7 @@ pub const theme_files = [_]theme_file{
     THEME("themes/kanso-ink.json"),
     THEME("themes/kanso-mist.json"),
     THEME("editors/visual-studio-code/themes/selenized-dark.json"),
+    THEME("themes/starfall-color-theme.json"),
 
     // base16 collection dark
 
