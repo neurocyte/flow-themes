@@ -91,6 +91,22 @@ fn load_json(theme_: *theme_file) theme {
         .tab_selected = derive_style.tab_selected(type_idx, cb),
         .tab_unfocused_active = derive_style.tab_unfocused_active(type_idx, cb),
         .tab_unfocused_inactive = derive_style.tab_unfocused_inactive(type_idx, cb),
+        .ansi_black = derive_style.ansi_black(type_idx, cb),
+        .ansi_red = derive_style.ansi_red(type_idx, cb),
+        .ansi_green = derive_style.ansi_green(type_idx, cb),
+        .ansi_yellow = derive_style.ansi_yellow(type_idx, cb),
+        .ansi_blue = derive_style.ansi_blue(type_idx, cb),
+        .ansi_magenta = derive_style.ansi_magenta(type_idx, cb),
+        .ansi_cyan = derive_style.ansi_cyan(type_idx, cb),
+        .ansi_white = derive_style.ansi_white(type_idx, cb),
+        .ansi_bright_black = derive_style.ansi_bright_black(type_idx, cb),
+        .ansi_bright_red = derive_style.ansi_bright_red(type_idx, cb),
+        .ansi_bright_green = derive_style.ansi_bright_green(type_idx, cb),
+        .ansi_bright_yellow = derive_style.ansi_bright_yellow(type_idx, cb),
+        .ansi_bright_blue = derive_style.ansi_bright_blue(type_idx, cb),
+        .ansi_bright_magenta = derive_style.ansi_bright_magenta(type_idx, cb),
+        .ansi_bright_cyan = derive_style.ansi_bright_cyan(type_idx, cb),
+        .ansi_bright_white = derive_style.ansi_bright_white(type_idx, cb),
     };
 }
 
@@ -646,6 +662,70 @@ const derive_style = struct {
             .bg = if (find_color("tab.unfocusedInactiveBackground", cb)) |col| col else defaults.@"tab.unfocusedInactiveBackground"(type_idx, cb),
         };
     }
+
+    fn ansi_black(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBlack", cb)) |col| col else defaults.@"terminal.ansiBlack"(type_idx, cb).?;
+    }
+
+    fn ansi_red(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiRed", cb)) |col| col else defaults.@"terminal.ansiRed"(type_idx, cb).?;
+    }
+
+    fn ansi_green(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiGreen", cb)) |col| col else defaults.@"terminal.ansiGreen"(type_idx, cb).?;
+    }
+
+    fn ansi_yellow(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiYellow", cb)) |col| col else defaults.@"terminal.ansiYellow"(type_idx, cb).?;
+    }
+
+    fn ansi_blue(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBlue", cb)) |col| col else defaults.@"terminal.ansiBlue"(type_idx, cb).?;
+    }
+
+    fn ansi_magenta(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiMagenta", cb)) |col| col else defaults.@"terminal.ansiMagenta"(type_idx, cb).?;
+    }
+
+    fn ansi_cyan(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiCyan", cb)) |col| col else defaults.@"terminal.ansiCyan"(type_idx, cb).?;
+    }
+
+    fn ansi_white(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiWhite", cb)) |col| col else defaults.@"terminal.ansiWhite"(type_idx, cb).?;
+    }
+
+    fn ansi_bright_black(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBrightBlack", cb)) |col| col else defaults.@"terminal.ansiBrightBlack"(type_idx, cb).?;
+    }
+
+    fn ansi_bright_red(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBrightRed", cb)) |col| col else defaults.@"terminal.ansiBrightRed"(type_idx, cb).?;
+    }
+
+    fn ansi_bright_green(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBrightGreen", cb)) |col| col else defaults.@"terminal.ansiBrightGreen"(type_idx, cb).?;
+    }
+
+    fn ansi_bright_yellow(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBrightYellow", cb)) |col| col else defaults.@"terminal.ansiBrightYellow"(type_idx, cb).?;
+    }
+
+    fn ansi_bright_blue(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBrightBlue", cb)) |col| col else defaults.@"terminal.ansiBrightBlue"(type_idx, cb).?;
+    }
+
+    fn ansi_bright_magenta(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBrightMagenta", cb)) |col| col else defaults.@"terminal.ansiBrightMagenta"(type_idx, cb).?;
+    }
+
+    fn ansi_bright_cyan(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBrightCyan", cb)) |col| col else defaults.@"terminal.ansiBrightCyan"(type_idx, cb).?;
+    }
+
+    fn ansi_bright_white(type_idx: usize, cb: []const u8) Color {
+        return if (find_color("terminal.ansiBrightWhite", cb)) |col| col else defaults.@"terminal.ansiBrightWhite"(type_idx, cb).?;
+    }
 };
 
 const defaults = struct {
@@ -960,6 +1040,86 @@ const defaults = struct {
             .{ .color = derive_style.tab_inactive(type_idx, cb).fg.?.color, .alpha = 256 / 2 },
         })[type_idx];
     }
+
+    // 'terminal.ansiBlack': index: 0, dark: '#000000', light: '#000000',
+    fn @"terminal.ansiBlack"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x000000 }, .{ .color = 0x000000 } })[type_idx];
+    }
+
+    // 'terminal.ansiRed': index: 1, dark: '#cd3131', light: '#cd3131',
+    fn @"terminal.ansiRed"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xcd3131 }, .{ .color = 0xcd3131 } })[type_idx];
+    }
+
+    // 'terminal.ansiGreen': index: 2, dark: '#0DBC79', light: '#107C10',
+    fn @"terminal.ansiGreen"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x0DBC79 }, .{ .color = 0x107C10 } })[type_idx];
+    }
+
+    // 'terminal.ansiYellow': index: 3, dark: '#e5e510', light: '#949800',
+    fn @"terminal.ansiYellow"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xe5e510 }, .{ .color = 0x949800 } })[type_idx];
+    }
+
+    // 'terminal.ansiBlue': index: 4, dark: '#2472c8', light: '#0451a5',
+    fn @"terminal.ansiBlue"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x2472c8 }, .{ .color = 0x0451a5 } })[type_idx];
+    }
+
+    // 'terminal.ansiMagenta': index: 5, dark: '#bc3fbc', light: '#bc05bc',
+    fn @"terminal.ansiMagenta"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xbc3fbc }, .{ .color = 0xbc05bc } })[type_idx];
+    }
+
+    // 'terminal.ansiCyan': index: 6, dark: '#11a8cd', light: '#0598bc',
+    fn @"terminal.ansiCyan"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x11a8cd }, .{ .color = 0x0598bc } })[type_idx];
+    }
+
+    // 'terminal.ansiWhite': index: 7, dark: '#e5e5e5', light: '#555555',
+    fn @"terminal.ansiWhite"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xe5e5e5 }, .{ .color = 0x555555 } })[type_idx];
+    }
+
+    // 'terminal.ansiBrightBlack': index: 8, dark: '#666666', light: '#666666',
+    fn @"terminal.ansiBrightBlack"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x666666 }, .{ .color = 0x666666 } })[type_idx];
+    }
+
+    // 'terminal.ansiBrightRed': index: 9, dark: '#f14c4c', light: '#cd3131',
+    fn @"terminal.ansiBrightRed"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xf14c4c }, .{ .color = 0xcd3131 } })[type_idx];
+    }
+
+    // 'terminal.ansiBrightGreen': index: 10, dark: '#23d18b', light: '#14CE14',
+    fn @"terminal.ansiBrightGreen"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x23d18b }, .{ .color = 0x14CE14 } })[type_idx];
+    }
+
+    // 'terminal.ansiBrightYellow': index: 11, dark: '#f5f543', light: '#b5ba00',
+    fn @"terminal.ansiBrightYellow"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xf5f543 }, .{ .color = 0xb5ba00 } })[type_idx];
+    }
+
+    // 'terminal.ansiBrightBlue': index: 12, dark: '#3b8eea', light: '#0451a5',
+    fn @"terminal.ansiBrightBlue"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x3b8eea }, .{ .color = 0x0451a5 } })[type_idx];
+    }
+
+    // 'terminal.ansiBrightMagenta': index: 13, dark: '#d670d6', light: '#bc05bc',
+    fn @"terminal.ansiBrightMagenta"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xd670d6 }, .{ .color = 0xbc05bc } })[type_idx];
+    }
+
+    // 'terminal.ansiBrightCyan': index: 14, dark: '#29b8db', light: '#0598bc',
+    fn @"terminal.ansiBrightCyan"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x29b8db }, .{ .color = 0x0598bc } })[type_idx];
+    }
+
+    // 'terminal.ansiBrightWhite': index: 15, dark: '#e5e5e5', light: '#a5a5a5',
+    fn @"terminal.ansiBrightWhite"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0xe5e5e5 }, .{ .color = 0xa5a5a5 } })[type_idx];
+    }
 };
 
 const Writer = std.fs.File.Writer;
@@ -989,6 +1149,14 @@ fn write_field_Style(writer: *std.Io.Writer, name: []const u8, value: Style) !vo
     _ = try writer.print(",\n", .{});
 }
 
+fn write_field_Color(writer: *std.Io.Writer, name: []const u8, value: Color) !void {
+    try writer.print("        .@\"{s}\" = .{{ .color = 0x{x}, .alpha = 0x{x} }},\n", .{
+        name,
+        value.color,
+        value.alpha,
+    });
+}
+
 fn write_field_token_array(writer: *std.Io.Writer, name: []const u8, values: Tokens) !void {
     _ = try writer.print("        .@\"{s}\" = &[_]theme.Token{{ \n", .{name});
     for (values) |value| {
@@ -1002,6 +1170,8 @@ fn write_field_token_array(writer: *std.Io.Writer, name: []const u8, values: Tok
 fn write_field(writer: *std.Io.Writer, name: []const u8, value: anytype) !void {
     return if (@TypeOf(value) == Style)
         write_field_Style(writer, name, value)
+    else if (@TypeOf(value) == Color)
+        write_field_Color(writer, name, value)
     else if (@TypeOf(value) == Tokens)
         write_field_token_array(writer, name, value)
     else

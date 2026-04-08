@@ -39,6 +39,23 @@ tab_selected: Style,
 tab_unfocused_active: Style,
 tab_unfocused_inactive: Style,
 
+ansi_black: Color,
+ansi_red: Color,
+ansi_green: Color,
+ansi_yellow: Color,
+ansi_blue: Color,
+ansi_magenta: Color,
+ansi_cyan: Color,
+ansi_white: Color,
+ansi_bright_black: Color,
+ansi_bright_red: Color,
+ansi_bright_green: Color,
+ansi_bright_yellow: Color,
+ansi_bright_blue: Color,
+ansi_bright_magenta: Color,
+ansi_bright_cyan: Color,
+ansi_bright_white: Color,
+
 tokens: Tokens,
 
 pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };
