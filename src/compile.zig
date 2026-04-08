@@ -1185,6 +1185,13 @@ fn write_field_Color(writer: *std.Io.Writer, name: []const u8, value: Color) !vo
     });
 }
 
+fn write_field_ansi_palette(writer: *std.Io.Writer, name: []const u8, value: [16][3]u8) !void {
+    try writer.print("        .@\"{s}\" = .{{\n", .{name});
+    for (value) |rgb|
+        try writer.print("            .{{ 0x{x:0>2}, 0x{x:0>2}, 0x{x:0>2} }},\n", .{ rgb[0], rgb[1], rgb[2] });
+    try writer.print("        }},\n", .{});
+}
+
 fn write_field_token_array(writer: *std.Io.Writer, name: []const u8, values: Tokens) !void {
     _ = try writer.print("        .@\"{s}\" = &[_]theme.Token{{ \n", .{name});
     for (values) |value| {
@@ -1200,6 +1207,8 @@ fn write_field(writer: *std.Io.Writer, name: []const u8, value: anytype) !void {
         write_field_Style(writer, name, value)
     else if (@TypeOf(value) == Color)
         write_field_Color(writer, name, value)
+    else if (@TypeOf(value) == [16][3]u8)
+        write_field_ansi_palette(writer, name, value)
     else if (@TypeOf(value) == Tokens)
         write_field_token_array(writer, name, value)
     else
