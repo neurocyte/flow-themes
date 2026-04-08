@@ -56,6 +56,8 @@ ansi_bright_magenta: Color,
 ansi_bright_cyan: Color,
 ansi_bright_white: Color,
 
+ansi_palette: [16][3]u8,
+
 tokens: Tokens,
 
 pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };

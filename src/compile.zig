@@ -107,6 +107,8 @@ fn load_json(theme_: *theme_file) theme {
         .ansi_bright_magenta = derive_style.ansi_bright_magenta(type_idx, cb),
         .ansi_bright_cyan = derive_style.ansi_bright_cyan(type_idx, cb),
         .ansi_bright_white = derive_style.ansi_bright_white(type_idx, cb),
+
+        .ansi_palette = derive_style.ansi_palette(type_idx, cb),
     };
 }
 
@@ -725,6 +727,32 @@ const derive_style = struct {
 
     fn ansi_bright_white(type_idx: usize, cb: []const u8) Color {
         return if (find_color("terminal.ansiBrightWhite", cb)) |col| col else defaults.@"terminal.ansiBrightWhite"(type_idx, cb).?;
+    }
+
+    fn ansi_palette(type_idx: usize, cb: []const u8) [16][3]u8 {
+        const c = struct {
+            fn f(v: u24) [3]u8 {
+                return .{ @truncate(v >> 16), @truncate(v >> 8), @truncate(v) };
+            }
+        }.f;
+        return .{
+            c(ansi_black(type_idx, cb).color),
+            c(ansi_red(type_idx, cb).color),
+            c(ansi_green(type_idx, cb).color),
+            c(ansi_yellow(type_idx, cb).color),
+            c(ansi_blue(type_idx, cb).color),
+            c(ansi_magenta(type_idx, cb).color),
+            c(ansi_cyan(type_idx, cb).color),
+            c(ansi_white(type_idx, cb).color),
+            c(ansi_bright_black(type_idx, cb).color),
+            c(ansi_bright_red(type_idx, cb).color),
+            c(ansi_bright_green(type_idx, cb).color),
+            c(ansi_bright_yellow(type_idx, cb).color),
+            c(ansi_bright_blue(type_idx, cb).color),
+            c(ansi_bright_magenta(type_idx, cb).color),
+            c(ansi_bright_cyan(type_idx, cb).color),
+            c(ansi_bright_white(type_idx, cb).color),
+        };
     }
 };
 
