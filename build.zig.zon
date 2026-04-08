@@ -108,8 +108,8 @@
             .hash = "N-V-__8AAA72RgCvA8bQFrVG96f_wvRoajiIsDZtV_75BGgI",
         },
         .cbor = .{
-            .url = "git+https://github.com/neurocyte/cbor?ref=master#7d2eeb68c8a2fb3f4d6baad6cc04c521b92974c0",
-            .hash = "cbor-1.0.0-RcQE_AswAQAPlqBCZXYQf9DZXn-0Ubt8Mk03ZcJWcsAG",
+            .url = "git+https://github.com/neurocyte/cbor?ref=master#66c28df31b8e4448dac7edf063417f2234d6f3c9",
+            .hash = "cbor-1.1.0-RcQE_DZMAQBg77bTLWHEMF7QSF2lWUudUbarD9xC5yVJ",
         },
     },
     .paths = .{
