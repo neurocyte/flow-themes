@@ -115,6 +115,10 @@
             .url = "git+https://github.com/chandan00761/starfall-visual-studio-code?ref=main#ec8d12a160042dea53b651d507fcb41f118fb87c",
             .hash = "N-V-__8AADJTUQAu-OzC23GuzN_not1GCjo-nEK0kXbtoB7y",
         },
+        .theme_retro82 = .{
+            .url = "git+https://github.com/OldJobobo/retro-82-theme.vscode#e94fb87a6be2a1513701b44fde8b437e61559d62",
+            .hash = "N-V-__8AAP3kDQDD-jDIIPzYBuSlfQy1wSwyen_A2Z1EZ48i",
+        },
     },
     .paths = .{
         "build.zig",

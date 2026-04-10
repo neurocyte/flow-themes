@@ -58,6 +58,7 @@ pub const theme_files = [_]theme_file{
 
     // base16 collection dark
 
+    THEME("themes/base16-retro-82-color-theme.json"),
     THEME("themes/3024-dark.json"),
     THEME("themes/apathy-dark.json"),
     THEME("themes/ashes-dark.json"),
