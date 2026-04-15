@@ -228,6 +228,6 @@ pub const theme_files = [_]theme_file{
 };
 
 fn THEME(comptime file_path: []const u8) theme_file {
-    @setEvalBranchQuota(10000);
+    @setEvalBranchQuota(100000);
     return .{ .file_name = std.fs.path.basename(file_path), .json = @embedFile(file_path) };
 }

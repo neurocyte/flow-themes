@@ -1,7 +1,7 @@
 .{
     .name = .flow_themes,
     .version = "0.0.1",
-    .minimum_zig_version = "0.15.2",
+    .minimum_zig_version = "0.16.0",
     .fingerprint = 0x4c6fd5b6412e42ff,
 
     .dependencies = .{
@@ -9,87 +9,87 @@
         // themes
         .theme_1984 = .{
             .url = "https://github.com/juanmnl/vs-1984/archive/983c9bd674d2aedd9edb6f18b2d62c31a2f9eae7.tar.gz",
-            .hash = "1220fba79c5688d869aa2207e3e9b174a985bf298b9017f463e9e3a5fbb7668b86d9",
+            .hash = "N-V-__8AAHoh2QD7p5xWiNhpqiIH4-mxdKmFvymLkBf0Y-nj",
         },
         .theme_cobalt2 = .{
             .url = "https://github.com/wesbos/cobalt2-vscode/archive/542ecdfcff52c5175b85438de237ba88e7f6c140.tar.gz",
-            .hash = "1220b860fa41d1d90450518e76096bcd9473d7e3e5e4ed01d3578ae4fe10175e9981",
+            .hash = "N-V-__8AAKQjCwC4YPpB0dkEUFGOdglrzZRz1-Pl5O0B01eK",
         },
         .theme_oldschool = .{
             .url = "https://github.com/EricsonWillians/oldschool-theme/archive/15f472028b56ac58495d6bf4ecd7d173320646f0.tar.gz",
-            .hash = "12207eb3983e2ecd7e91c299e7a9dc77b13d44fd5d6bada1928f2d6864c0036691cf",
+            .hash = "N-V-__8AAGZ-CwB-s5g-Ls1-kcKZ56ncd7E9RP1da62hko8t",
         },
         .theme_turbo_colors = .{
             .url = "https://github.com/metropolian/theme-turbo/archive/fc6765cad1d28a418666458f80f6b863090f0a49.tar.gz",
-            .hash = "122019d9e3f76e9b866131e1dc9cea2b77a12a278a5f253d5b8d6c9ea92c92e1fc06",
+            .hash = "N-V-__8AAN5KHAAZ2eP3bpuGYTHh3JzqK3ehKieKXyU9W41s",
         },
         .theme_vscode = .{
             .url = "https://github.com/microsoft/vscode/archive/fd2db103459c82eb77d36bb968d3b98137cda5b4.tar.gz",
-            .hash = "12207d7292daa0811be527c42e4071357bc248328691a426f9836369fa54cc9f7200",
+            .hash = "N-V-__8AAKNDdAV9cpLaoIEb5SfELkBxNXvCSDKGkaQm-YNj",
         },
         .theme_CRT = .{
             .url = "https://github.com/neurocyte/crt-themes/releases/download/master-4705c3761dd0fbc3b5ae85f1c39f0e9fe8f6ce5a/crt-themes.tar.gz",
-            .hash = "1220da8b8fe19481e05ca1678a97656532bfbba69b898d215d879e7f2b28fb903783",
+            .hash = "N-V-__8AALRSAgDai4_hlIHgXKFnipdlZTK_u6abiY0hXYee",
         },
         .theme_gruvbox = .{
             .url = "https://github.com/jdinhify/vscode-theme-gruvbox/archive/b1b9837e6747e040b69c7d46e502286bb0f257f7.tar.gz",
-            .hash = "1220fcaf3181a354ee8a1413f3a15d2a1842e1377a95f636d4f26602d5bb38e45f00",
+            .hash = "N-V-__8AABqiHwD8rzGBo1TuihQT86FdKhhC4Td6lfY21PJm",
         },
         .theme_gruvbox_material = .{
             .url = "https://github.com/sainnhe/gruvbox-material-vscode/archive/1ef2c818f2651e0eae73bacad4ab87b94801f42b.tar.gz",
-            .hash = "122088d568238fcd69297acc42cf04555fbbc89e86b6a48f6ae5d66db387053621f1",
+            .hash = "N-V-__8AADgxDQCI1Wgjj81pKXrMQs8EVV-7yJ6GtqSPauXW",
         },
         .theme_tokyo_night = .{
             .url = "https://github.com/enkia/tokyo-night-vscode-theme/archive/55336bd57924021c174470d9f476a1db01eddb97.tar.gz",
-            .hash = "1220f9729cd271c29dee0e199b2bc0f801cb657b603668680a07191b9a8c1b1f21fb",
+            .hash = "N-V-__8AAIG5CgD5cpzSccKd7g4ZmyvA-AHLZXtgNmhoCgcZ",
         },
         .theme_ayu = .{
             .url = "https://github.com/ayu-theme/vscode-ayu/archive/91839e8a9dfa78d61e58dbcf9b52272a01fee66a.tar.gz",
-            .hash = "1220217a9a25d48cd61948f3455d08d4f64ed2c72e79f3257a9f28c746eb1432af27",
+            .hash = "N-V-__8AABmRVQAhepol1IzWGUjzRV0I1PZO0scuefMlep8o",
         },
         .theme_onedark_pro = .{
             .url = "https://github.com/Binaryify/OneDark-Pro/archive/2cb4ae735fc0482e0486b52cd873128eb5249900.tar.gz",
-            .hash = "122046bbdd4b5a816d5324a8c6b78e4d70dc07cdafb113b2a118bcdfeb0f8531dc60",
+            .hash = "N-V-__8AABUVOgBGu91LWoFtUySoxreOTXDcB82vsROyoRi8",
         },
         .theme_rose_pine = .{
             .url = "https://github.com/rose-pine/vscode/archive/5a6d89246d58316802bf5c54bb83d6654ff6a1c5.tar.gz",
-            .hash = "122000c273023b1213dbc73bc1c144a7a6ef5879a30205ad1939589ddc4736a6d24e",
+            .hash = "N-V-__8AAK80AwAAwnMCOxIT28c7wcFEp6bvWHmjAgWtGTlY",
         },
         .theme_adwaita = .{
             .url = "https://github.com/piousdeer/vscode-adwaita/archive/5de82debcb101e5796b478e55dd382bd64be64f7.tar.gz",
-            .hash = "1220c6227c698f27a09c20706a8c785c4123a943e3b953c1f50457496f54e725d55b",
+            .hash = "N-V-__8AAMEBGQDGInxpjyegnCBwaox4XEEjqUPjuVPB9QRX",
         },
         .theme_everforest = .{
             .url = "https://github.com/sainnhe/everforest-vscode/archive/1e6e97e2ef074993f6e0ff6f2d67514431f22067.tar.gz",
-            .hash = "1220419a333850cf5fee8f6b65a8f10b299a37706154840ee7dc112f6a970db56542",
+            .hash = "N-V-__8AALXACgBBmjM4UM9f7o9rZajxCymaN3BhVIQO59wR",
         },
         .theme_nord = .{
             .url = "https://github.com/nordtheme/visual-studio-code/archive/8ead09822c02d0d49d0f764104505e5a34d3689f.tar.gz",
-            .hash = "12200a932586d96e15f5c325b4e671cf18257a0c125e3c5c46cdd18b201e454bf90f",
+            .hash = "N-V-__8AABE7CAAKkyWG2W4V9cMltOZxzxglegwSXjxcRs3R",
         },
         .theme_catppuccin = .{
             .url = "https://github.com/neurocyte/catppuccin-flow/releases/download/catppuccin-vsc-v3.15.2/vscode-3.15.2.tgz",
-            .hash = "122076748115e6aa1eb16fe79f525f48b62e5783af943026544806e15ecc711daa7e",
+            .hash = "N-V-__8AAFmDFwB2dIEV5qoesW_nn1JfSLYuV4OvlDAmVEgG",
         },
         .theme_mellow = .{
             .url = "https://github.com/mellow-theme/mellow-theme/archive/00cea86c91a8eb95af09b2cb587a30d52e06ba91.tar.gz",
-            .hash = "122062276c850b37d78f4f981c25c1b14f05d1124429b6e496fe059107c9115d00da",
+            .hash = "N-V-__8AANc0AABiJ2yFCzfXj0-YHCXBsU8F0RJEKbbklv4F",
         },
         .theme_zenbones = .{
             .url = "https://github.com/rpbritton/zenbones.vscode/archive/c587792a912ac8f81e244d951ad95564ef5b8c0e.tar.gz",
-            .hash = "122053dbc0b7c047e80db931873f4127ce8301eb4b2e779aede2616fc79f3b23abda",
+            .hash = "N-V-__8AAHbEEABT28C3wEfoDbkxhz9BJ86DAetLLnea7eJh",
         },
         .theme_kanagawa = .{
             .url = "https://github.com/metapho-re/kanagawa-vscode-theme/archive/0e86b4edeccf415ff941d1ae0a84da123bd929e6.tar.gz",
-            .hash = "122040811faf00ad24acdf34654a2d65df48d6aefa9ad925ea039d305fe9ea483013",
+            .hash = "N-V-__8AAIp0GwBAgR-vAK0krN80ZUotZd9I1q76mtkl6gOd",
         },
         .theme_hypersubatomic = .{
             .url = "https://github.com/usgraphics/hypersubatomic-vscode-theme/archive/ef172ddf88c8e31e1541461b3eea127cc81fa886.tar.gz",
-            .hash = "1220c88ea76ff21dbba04c0cb9509a7dff1fb5efcae6c579250a18748fafefdef657",
+            .hash = "N-V-__8AAIz7aADIjqdv8h27oEwMuVCaff8fte_K5sV5JQoY",
         },
         .theme_base16 = .{
             .url = "https://github.com/pzinovkin/base16-vscode/archive/f25f8495f50ef4481920ff3db7efec3f28b9fb2f.tar.gz",
-            .hash = "1220a66a6ef581de3f480883b11bf049956ca0b2130b14a84a7f1b8ca05123088794",
+            .hash = "N-V-__8AAEi9CACmam71gd4_SAiDsRvwSZVsoLITCxSoSn8b",
         },
         .theme_alabaster = .{
             .url = "git+https://github.com/tonsky/vscode-theme-alabaster?ref=master#bb740b616fe4a573154ae94c6ef4671ee4d21f1e",

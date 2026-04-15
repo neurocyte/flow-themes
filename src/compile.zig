@@ -1150,7 +1150,7 @@ const defaults = struct {
     }
 };
 
-const Writer = std.fs.File.Writer;
+const Writer = std.Io.File.Writer;
 
 fn write_field_string(writer: *std.Io.Writer, name: []const u8, value: []const u8) !void {
     _ = try writer.print("        .@\"{s}\" = \"{s}\",\n", .{ name, value });
@@ -1224,13 +1224,13 @@ fn write_theme(writer: *std.Io.Writer, item: theme) !void {
     _ = try writer.write("    },\n");
 }
 
-fn write_all_themes(writer: *std.Io.Writer) !void {
+fn write_all_themes(io: std.Io, writer: *std.Io.Writer) !void {
     _ = try writer.write("const theme = @import(\"theme\");\n");
     _ = try writer.write("pub const themes = [_]theme{\n");
     for (&theme_files) |*file| {
-        try write_file("themes", std.fs.path.basename(file.file_name), file.json);
+        try write_file(io, "themes", std.fs.path.basename(file.file_name), file.json);
         std.debug.print("theme: {s}\n", .{std.fs.path.basename(file.file_name)});
-        file.json = try hjson(file.json);
+        file.json = try hjson(io, file.json);
         // try write_file("cleaned", std.fs.path.basename(file.file_name), file.json);
         const theme_ = load_json(file);
         try write_theme(writer, theme_);
@@ -1247,7 +1247,7 @@ const ScopeMap = std.StringHashMap(usize);
 var scopes: ScopeMap = undefined;
 var scopes_vec: std.ArrayList([]const u8) = undefined;
 
-pub fn main() !void {
+pub fn main(init: std.process.Init) !void {
     var arena_state = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena_state.deinit();
     const arena = arena_state.allocator();
@@ -1255,21 +1255,22 @@ pub fn main() !void {
     scopes = ScopeMap.init(allocator);
     scopes_vec = .empty;
 
-    const args = try std.process.argsAlloc(arena);
+    const io = init.io;
+    const args = try init.minimal.args.toSlice(arena);
 
     if (args.len != 2) fatal("wrong number of arguments", .{});
 
     const output_file_path = args[1];
 
-    var output_file = std.fs.cwd().createFile(output_file_path, .{}) catch |err| {
+    var output_file = std.Io.Dir.cwd().createFile(io, output_file_path, .{}) catch |err| {
         fatal("unable to open '{s}': {s}", .{ output_file_path, @errorName(err) });
     };
-    defer output_file.close();
+    defer output_file.close(io);
     var buf: [4096]u8 = undefined;
-    var writer = output_file.writer(&buf);
-    defer writer.interface.flush() catch @panic("flush failed");
-    try write_all_themes(&writer.interface);
-    return std.process.cleanExit();
+    var writer = std.Io.File.writer(output_file, io, &buf);
+    defer writer.flush() catch @panic("flush failed");
+    try write_all_themes(io, &writer.interface);
+    return std.process.cleanExit(io);
 }
 
 fn fatal(comptime format: []const u8, args: anytype) noreturn {
@@ -1277,38 +1278,39 @@ fn fatal(comptime format: []const u8, args: anytype) noreturn {
     std.process.exit(1);
 }
 
-fn hjson(data: []const u8) ![]const u8 {
-    const cmd = [_][]const u8{ "hjson", "-j" }; // Replace with your shell command
-    var child = std.process.Child.init(&cmd, allocator);
-    child.stdin_behavior = .Pipe;
-    child.stdout_behavior = .Pipe;
-    child.stderr_behavior = .Pipe;
-    try child.spawn();
-    try child.stdin.?.writeAll(data);
-    child.stdin.?.close();
+fn hjson(io: std.Io, data: []const u8) ![]const u8 {
+    const cmd = [_][]const u8{ "hjson", "-j" };
+    var child = try std.process.spawn(io, .{
+        .argv = &cmd,
+        .stdin = .pipe,
+        .stdout = .pipe,
+        .stderr = .pipe,
+    });
+    var stdin_buf: [4096]u8 = undefined;
+    var stdin_writer = std.Io.File.writer(child.stdin.?, io, &stdin_buf);
+    try stdin_writer.interface.writeAll(data);
+    try stdin_writer.flush();
+    child.stdin.?.close(io);
     child.stdin = null;
     var out: std.Io.Writer.Allocating = .init(allocator);
-    var buffer: [256]u8 = undefined;
-    while (true) {
-        const bytesRead = try child.stdout.?.read(&buffer);
-        if (bytesRead == 0) break;
-        try out.writer.writeAll(buffer[0..bytesRead]);
-    }
-    const term = child.wait() catch |e| std.debug.panic("error running hjson: {any}", .{e});
+    var stdout_buf: [4096]u8 = undefined;
+    var stdout_reader = std.Io.File.reader(child.stdout.?, io, &stdout_buf);
+    _ = try stdout_reader.interface.streamRemaining(&out.writer);
+    const term = child.wait(io) catch |e| std.debug.panic("error running hjson: {any}", .{e});
     switch (term) {
-        std.process.Child.Term.Exited => |code| if (code == 0) return out.toOwnedSlice(),
+        .exited => |code| if (code == 0) return out.toOwnedSlice(),
         else => {},
     }
     std.debug.panic("Exited with code {any}", .{term});
 }
 
-fn write_file(dir: []const u8, file_name: []const u8, data: []const u8) !void {
-    const cwd = std.fs.cwd();
-    cwd.makeDir(dir) catch |e| switch (e) {
+fn write_file(io: std.Io, dir: []const u8, file_name: []const u8, data: []const u8) !void {
+    const cwd = std.Io.Dir.cwd();
+    cwd.createDir(io, dir, .default_dir) catch |e| switch (e) {
         error.PathAlreadyExists => {},
         else => return e,
     };
-    var file = try (try cwd.openDir(dir, .{})).createFile(file_name, .{ .truncate = true });
-    defer file.close();
-    try file.writeAll(data);
+    var sub_dir = try cwd.openDir(io, dir, .{});
+    defer sub_dir.close(io);
+    try sub_dir.writeFile(io, .{ .sub_path = file_name, .data = data });
 }
