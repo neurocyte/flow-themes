@@ -1,6 +1,6 @@
 .{
     .name = .flow_themes,
-    .version = "0.0.1",
+    .version = "0.7.2",
     .minimum_zig_version = "0.16.0",
     .fingerprint = 0x4c6fd5b6412e42ff,
 
