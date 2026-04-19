@@ -22,6 +22,35 @@ pub fn build(b: *std.Build) void {
     b.getInstallStep().dependOn(&b.addInstallFileWithDir(themes_compile_output, .{ .custom = "src" }, "themes.zig").step);
     b.installFile("src/theme.zig", "src/theme.zig");
     b.installFile("src/build-dest.zig", "./build.zig");
+
+    const themes_mod = b.createModule(.{
+        .root_source_file = themes_compile_output,
+        .imports = &.{
+            .{ .name = "theme", .module = theme_mod },
+        },
+    });
+    const check_exe = b.addExecutable(.{
+        .name = "check",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/check.zig"),
+            .target = target,
+            .imports = &.{
+                .{ .name = "theme", .module = theme_mod },
+                .{ .name = "themes", .module = themes_mod },
+            },
+        }),
+    });
+    const check_build_zig = b.addObject(.{
+        .name = "check_build_zig",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/build-dest.zig"),
+            .target = target,
+        }),
+    });
+
+    const check_step = b.step("check", "Verify generated files compile");
+    check_step.dependOn(&check_exe.step);
+    check_step.dependOn(&check_build_zig.step);
 }
 
 fn theme_file(b: *std.Build, exe: anytype, comptime dep_name: []const u8, comptime sub_path: []const u8) void {
