@@ -1,6 +1,6 @@
 name: []const u8,
 description: []const u8,
-type: []const u8,
+type: Type,
 
 editor: Style,
 editor_cursor: Style,
@@ -60,6 +60,7 @@ ansi_palette: [16][3]u8,
 
 tokens: Tokens,
 
+pub const Type = enum { dark, light };
 pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };
 pub const Style = struct { fg: ?Color = null, bg: ?Color = null, fs: ?FontStyle = null };
 pub const Color = struct {

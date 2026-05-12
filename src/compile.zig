@@ -49,11 +49,39 @@ fn load_json(theme_: *theme_file) theme {
             cbor.skipValue(&iter) catch unreachable;
         }
     }
-    const type_idx: usize = if (theme_type) |t| if (eql(u8, t, "light")) 1 else 0 else 0;
+    const declared = parse_type_string(theme_type);
+    const computed = compute_theme_type(cb);
+    const final_type: theme.Type = computed orelse declared orelse .dark;
+
+    if (computed) |c| {
+        if (declared) |d| {
+            if (d != c) std.debug.print(
+                "warning: theme '{s}' declares type '{t}' but editor luma indicates '{t}'; using '{t}'\n",
+                .{ name, d, c, c },
+            );
+        } else if (theme_type) |raw| {
+            std.debug.print(
+                "warning: theme '{s}' has unrecognized type '{s}'; using computed '{t}'\n",
+                .{ name, raw, c },
+            );
+        } else {
+            std.debug.print(
+                "warning: theme '{s}' missing type field; using computed '{t}'\n",
+                .{ name, c },
+            );
+        }
+    } else if (declared == null and theme_type != null) {
+        std.debug.print(
+            "warning: theme '{s}' has unrecognized type '{s}' and no explicit editor colors to derive from; defaulting to 'dark'\n",
+            .{ name, theme_type.? },
+        );
+    }
+
+    const type_idx: usize = if (final_type == .light) @as(usize, 1) else 0;
     return .{
         .name = name,
         .description = description orelse name,
-        .type = theme_type orelse "dark",
+        .type = final_type,
         .tokens = to_token_array(load_token_colors(file_name, cb)),
         .editor = derive_style.editor(type_idx, cb),
         .editor_cursor = derive_style.editor_cursor(type_idx, cb),
@@ -343,6 +371,26 @@ fn find_in_colors(name: []const u8, iter: *[]const u8) ?Color {
             return parse_color_value(value);
     }
     return null;
+}
+
+fn luma_of(c: Color) u32 {
+    const r: u32 = (c.color >> 16) & 0xFF;
+    const g: u32 = (c.color >> 8) & 0xFF;
+    const b: u32 = c.color & 0xFF;
+    return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+fn parse_type_string(s: ?[]const u8) ?theme.Type {
+    const t = s orelse return null;
+    if (eql(u8, t, "dark")) return .dark;
+    if (eql(u8, t, "light")) return .light;
+    return null;
+}
+
+fn compute_theme_type(cb: []const u8) ?theme.Type {
+    const bg = find_color("editor.background", cb) orelse return null;
+    const fg = find_color("editor.foreground", cb) orelse return null;
+    return if (luma_of(bg) < luma_of(fg)) .dark else .light;
 }
 
 fn parse_color_value_checked(s: []const u8) !Color {
@@ -1202,6 +1250,10 @@ fn write_field_token_array(writer: *std.Io.Writer, name: []const u8, values: Tok
     _ = try writer.print("        }},\n", .{});
 }
 
+fn write_field_Type(writer: *std.Io.Writer, name: []const u8, value: theme.Type) !void {
+    _ = try writer.print("        .@\"{s}\" = .{t},\n", .{ name, value });
+}
+
 fn write_field(writer: *std.Io.Writer, name: []const u8, value: anytype) !void {
     return if (@TypeOf(value) == Style)
         write_field_Style(writer, name, value)
@@ -1211,6 +1263,8 @@ fn write_field(writer: *std.Io.Writer, name: []const u8, value: anytype) !void {
         write_field_ansi_palette(writer, name, value)
     else if (@TypeOf(value) == Tokens)
         write_field_token_array(writer, name, value)
+    else if (@TypeOf(value) == theme.Type)
+        write_field_Type(writer, name, value)
     else
         write_field_string(writer, name, value);
 }
