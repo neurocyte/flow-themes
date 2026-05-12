@@ -17,7 +17,7 @@ fn get_include_json(file_name: []const u8) []const u8 {
         if (eql(u8, std.fs.path.basename(file_name), std.fs.path.basename(tf.file_name)))
             return load_cbor(tf);
     }
-    std.debug.print("failed to find include file: {s}\n", .{std.fs.path.basename(file_name)});
+    std.log.err("failed to find include file: {s}", .{std.fs.path.basename(file_name)});
     unreachable;
 }
 
@@ -55,24 +55,24 @@ fn load_json(theme_: *theme_file) theme {
 
     if (computed) |c| {
         if (declared) |d| {
-            if (d != c) std.debug.print(
-                "warning: theme '{s}' declares type '{t}' but editor luma indicates '{t}'; using '{t}'\n",
+            if (d != c) std.log.warn(
+                "warning: theme '{s}' declares type '{t}' but editor luma indicates '{t}'; using '{t}'",
                 .{ name, d, c, c },
             );
         } else if (theme_type) |raw| {
-            std.debug.print(
-                "warning: theme '{s}' has unrecognized type '{s}'; using computed '{t}'\n",
+            std.log.warn(
+                "warning: theme '{s}' has unrecognized type '{s}'; using computed '{t}'",
                 .{ name, raw, c },
             );
         } else {
-            std.debug.print(
-                "warning: theme '{s}' missing type field; using computed '{t}'\n",
+            std.log.warn(
+                "warning: theme '{s}' missing type field; using computed '{t}'",
                 .{ name, c },
             );
         }
     } else if (declared == null and theme_type != null) {
-        std.debug.print(
-            "warning: theme '{s}' has unrecognized type '{s}' and no explicit editor colors to derive from; defaulting to 'dark'\n",
+        std.log.warn(
+            "warning: theme '{s}' has unrecognized type '{s}' and no explicit editor colors to derive from; defaulting to 'dark'",
             .{ name, theme_type.? },
         );
     }
@@ -408,7 +408,7 @@ fn parse_color_value_checked(s: []const u8) !Color {
 fn parse_color_value(s: []const u8) Color {
     if (4 <= s.len and s.len <= 5) return parse_color_value_4bit(s);
     return parse_color_value_checked(s) catch {
-        std.debug.print("failed to parse color value: {s}\n", .{s});
+        std.log.err("failed to parse color value: {s}", .{s});
         unreachable;
     };
 }
@@ -417,7 +417,7 @@ fn parse_color_value_4bit(s: []const u8) Color {
     const color = "#" ++ s[1..2] ++ s[1..2] ++ s[2..3] ++ s[2..3] ++ s[3..4] ++ s[3..4];
     const expanded = if (s.len > 4) color ++ s[4..5] ++ s[4..5] else color;
     return parse_color_value_checked(expanded) catch {
-        std.debug.print("failed to parse expanded color value: {s} {s}\n", .{ s, expanded });
+        std.log.err("failed to parse expanded color value: {s} {s}", .{ s, expanded });
         unreachable;
     };
 }
@@ -1283,7 +1283,7 @@ fn write_all_themes(io: std.Io, writer: *std.Io.Writer) !void {
     _ = try writer.write("pub const themes = [_]theme{\n");
     for (&theme_files) |*file| {
         try write_file(io, "themes", std.fs.path.basename(file.file_name), file.json);
-        std.debug.print("theme: {s}\n", .{std.fs.path.basename(file.file_name)});
+        std.log.info("theme: {s}", .{std.fs.path.basename(file.file_name)});
         file.json = try hjson(io, file.json);
         // try write_file("cleaned", std.fs.path.basename(file.file_name), file.json);
         const theme_ = load_json(file);
@@ -1328,7 +1328,7 @@ pub fn main(init: std.process.Init) !void {
 }
 
 fn fatal(comptime format: []const u8, args: anytype) noreturn {
-    std.debug.print(format, args);
+    std.log.err(format, args);
     std.process.exit(1);
 }
 
