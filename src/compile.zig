@@ -8,6 +8,7 @@ var theme_files = @import("theme_files.zig").theme_files;
 
 const Color = theme.Color;
 const Style = theme.Style;
+const ScopeType = theme.ScopeType;
 const Token = theme.Token;
 const Tokens = theme.Tokens;
 const TokenMap = std.StringHashMap(Style);
@@ -137,6 +138,8 @@ fn load_json(theme_: *theme_file) theme {
         .ansi_bright_white = derive_style.ansi_bright_white(type_idx, cb),
 
         .ansi_palette = derive_style.ansi_palette(type_idx, cb),
+
+        .scope_type = .text_mate,
     };
 }
 
@@ -1240,6 +1243,10 @@ fn write_field_ansi_palette(writer: *std.Io.Writer, name: []const u8, value: [16
     try writer.print("        }},\n", .{});
 }
 
+fn write_field_ScopeType(writer: *std.Io.Writer, name: []const u8, value: ScopeType) !void {
+    _ = try writer.print("        .@\"{s}\" = .{t},\n", .{ name, value });
+}
+
 fn write_field_token_array(writer: *std.Io.Writer, name: []const u8, values: Tokens) !void {
     _ = try writer.print("        .@\"{s}\" = &[_]theme.Token{{ \n", .{name});
     for (values) |value| {
@@ -1261,6 +1268,8 @@ fn write_field(writer: *std.Io.Writer, name: []const u8, value: anytype) !void {
         write_field_Color(writer, name, value)
     else if (@TypeOf(value) == [16][3]u8)
         write_field_ansi_palette(writer, name, value)
+    else if (@TypeOf(value) == ScopeType)
+        write_field_ScopeType(writer, name, value)
     else if (@TypeOf(value) == Tokens)
         write_field_token_array(writer, name, value)
     else if (@TypeOf(value) == theme.Type)

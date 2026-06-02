@@ -58,6 +58,8 @@ ansi_bright_white: Color,
 
 ansi_palette: [16][3]u8,
 
+scope_type: ScopeType,
+
 tokens: Tokens,
 
 pub const Type = enum { dark, light };
@@ -96,6 +98,7 @@ pub const Color = struct {
         return color;
     }
 };
+pub const ScopeType = enum { tree_sitter, text_mate };
 pub const Token = struct { id: usize, style: Style };
 pub const Tokens = []const Token;
 
