@@ -68,8 +68,8 @@
             .hash = "N-V-__8AABE7CAAKkyWG2W4V9cMltOZxzxglegwSXjxcRs3R",
         },
         .theme_catppuccin = .{
-            .url = "https://github.com/neurocyte/catppuccin-flow/releases/download/catppuccin-vsc-v3.15.2/vscode-3.15.2.tgz",
-            .hash = "N-V-__8AAFmDFwB2dIEV5qoesW_nn1JfSLYuV4OvlDAmVEgG",
+            .url = "https://registry.npmjs.org/@catppuccin/vscode/-/vscode-3.18.1.tgz",
+            .hash = "N-V-__8AAPWWGAB7mZeXd0O5OWq4GJ_tiKB-qBXqrwA02ZrL",
         },
         .theme_mellow = .{
             .url = "https://github.com/mellow-theme/mellow-theme/archive/00cea86c91a8eb95af09b2cb587a30d52e06ba91.tar.gz",
