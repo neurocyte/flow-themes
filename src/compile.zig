@@ -312,11 +312,12 @@ fn load_scopes(tokens: *TokenMap, style: Style, cb: []const u8) void {
 }
 
 fn load_scopes_string(tokens: *TokenMap, style: Style, scopes_: []const u8) void {
-    var it = std.mem.splitScalar(u8, scopes_, ' ');
-    while (it.next()) |scope_| {
-        var it2 = std.mem.splitScalar(u8, scope_, ',');
-        while (it2.next()) |scope|
-            tokens.put(scope, style) catch unreachable;
+    var it = std.mem.splitScalar(u8, scopes_, ',');
+    while (it.next()) |raw| {
+        const selector = std.mem.trim(u8, raw, " ");
+        if (selector.len == 0) continue;
+        const target = if (std.mem.lastIndexOfScalar(u8, selector, ' ')) |i| selector[i + 1 ..] else selector;
+        if (target.len > 0) tokens.put(target, style) catch unreachable;
     }
 }
 
