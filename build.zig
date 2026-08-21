@@ -22,6 +22,7 @@ pub fn build(b: *std.Build) void {
     b.getInstallStep().dependOn(&b.addInstallFileWithDir(themes_compile_output, .{ .custom = "src" }, "themes.zig").step);
     b.installFile("src/theme.zig", "src/theme.zig");
     b.installFile("src/build-dest.zig", "./build.zig");
+    b.installFile("src/build-dest.zig.zon", "./build.zig.zon");
 
     const themes_mod = b.createModule(.{
         .root_source_file = themes_compile_output,
