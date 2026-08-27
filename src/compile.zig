@@ -95,6 +95,7 @@ fn load_json(theme_: *theme_file) theme {
         .editor_hint = derive_style.editor_hint(type_idx, cb),
         .editor_match = derive_style.editor_match(type_idx, cb),
         .editor_selection = derive_style.editor_selection(type_idx, cb),
+        .terminal_selection = derive_style.terminal_selection(type_idx, cb),
         .editor_whitespace = derive_style.editor_whitespace(type_idx, cb),
         .editor_gutter = derive_style.editor_gutter(type_idx, cb),
         .editor_gutter_active = derive_style.editor_gutter_active(type_idx, cb),
@@ -534,6 +535,13 @@ const derive_style = struct {
         };
     }
 
+    fn terminal_selection(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = if (find_color("terminal.selectionForeground", cb)) |col| col else defaults.@"terminal.selectionForeground"(type_idx, cb),
+            .bg = if (find_color("terminal.selectionBackground", cb)) |col| col else defaults.@"terminal.selectionBackground"(type_idx, cb),
+        };
+    }
+
     fn editor_whitespace(type_idx: usize, cb: []const u8) Style {
         return .{
             .fg = if (find_color("editorWhitespace.foreground", cb)) |col| col else defaults.@"editorWhitespace.foreground"(type_idx, cb),
@@ -919,6 +927,16 @@ const defaults = struct {
     // registerColor('editor.selectionBackground', { light: '#ADD6FF', dark: '#264F78', hcDark: '#f3f518', hcLight: '#0F4A85' }, nls.localize('editorSelectionBackground', "Color of the editor selection."));
     fn @"editor.selectionBackground"(type_idx: usize, _: []const u8) Color {
         return ([2]Color{ .{ .color = 0x264F78 }, .{ .color = 0xADD6FF } })[type_idx];
+    }
+
+    // registerColor('terminal.selectionBackground', editorSelectionBackground, nls.localize('terminal.selectionBackground', 'The selection background color of the terminal.'));
+    fn @"terminal.selectionBackground"(type_idx: usize, cb: []const u8) Color {
+        return @"editor.selectionBackground"(type_idx, cb);
+    }
+
+    // registerColor('terminal.selectionForeground', { light: null, dark: null, hcDark: '#000000', hcLight: '#ffffff' }, nls.localize('terminal.selectionForeground', 'The selection foreground color of the terminal. When this is null the selection foreground will be retained and have the minimum contrast ratio feature applied.'));
+    fn @"terminal.selectionForeground"(_: usize, _: []const u8) ?Color {
+        return null;
     }
 
     // registerColor('sideBar.foreground', { dark: null, light: null, hcDark: null, hcLight: null }, localize('sideBarForeground', "Side bar foreground color. The side bar is the container for views like explorer and search."));
