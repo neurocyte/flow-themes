@@ -1300,8 +1300,8 @@ fn write_field(writer: *std.Io.Writer, name: []const u8, value: anytype) !void {
 fn write_theme(writer: *std.Io.Writer, item: theme) !void {
     _ = try writer.write("    .{\n");
 
-    inline for (@typeInfo(theme).@"struct".fields) |field_info|
-        try write_field(writer, field_info.name, @field(item, field_info.name));
+    inline for (@typeInfo(theme).@"struct".field_names) |field_name|
+        try write_field(writer, field_name, @field(item, field_name));
 
     _ = try writer.write("    },\n");
 }

@@ -1,7 +1,7 @@
 .{
     .name = .flow_themes,
     .version = "0.7.2",
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0-dev.2122+3e15e99e6",
     .fingerprint = 0x4c6fd5b6412e42ff,
 
     .dependencies = .{
@@ -108,8 +108,8 @@
             .hash = "N-V-__8AAA72RgCvA8bQFrVG96f_wvRoajiIsDZtV_75BGgI",
         },
         .cbor = .{
-            .url = "git+https://github.com/neurocyte/cbor?ref=master#66c28df31b8e4448dac7edf063417f2234d6f3c9",
-            .hash = "cbor-1.1.0-RcQE_DZMAQBg77bTLWHEMF7QSF2lWUudUbarD9xC5yVJ",
+            .url = "git+https://github.com/neurocyte/cbor?ref=master#f050546f9a98d0f83384ab9b3a7f45d06722e029",
+            .hash = "cbor-1.3.0-RcQE_CyKAQDf-5eCDO7mO2Vv8laC-wYl779Hkap1lKWP",
         },
         .theme_starfall = .{
             .url = "git+https://github.com/chandan00761/starfall-visual-studio-code?ref=main#ec8d12a160042dea53b651d507fcb41f118fb87c",
