@@ -106,6 +106,8 @@ fn load_json(theme_: *theme_file) theme {
         .diff_editor_removed_line = derive_style.diff_editor_removed_line(type_idx, cb),
         .diff_editor_inserted_text = derive_style.diff_editor_inserted_text(type_idx, cb),
         .diff_editor_removed_text = derive_style.diff_editor_removed_text(type_idx, cb),
+        .diff_editor_gutter_inserted_line = derive_style.diff_editor_gutter_inserted_line(type_idx, cb),
+        .diff_editor_gutter_removed_line = derive_style.diff_editor_gutter_removed_line(type_idx, cb),
         .editor_widget = derive_style.editor_widget(type_idx, cb),
         .editor_widget_border = derive_style.editor_widget_border(type_idx, cb),
         .statusbar = derive_style.statusbar(type_idx, cb),
@@ -612,6 +614,18 @@ const derive_style = struct {
         };
     }
 
+    fn diff_editor_gutter_inserted_line(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .bg = if (find_color("diffEditorGutter.insertedLineBackground", cb)) |col| col else defaults.@"diffEditorGutter.insertedLineBackground"(type_idx, cb),
+        };
+    }
+
+    fn diff_editor_gutter_removed_line(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .bg = if (find_color("diffEditorGutter.removedLineBackground", cb)) |col| col else defaults.@"diffEditorGutter.removedLineBackground"(type_idx, cb),
+        };
+    }
+
     fn editor_widget(type_idx: usize, cb: []const u8) Style {
         return .{
             .fg = if (find_color("editorWidget.foreground", cb)) |col| col else defaults.@"editorWidget.foreground"(type_idx, cb),
@@ -1073,6 +1087,16 @@ const defaults = struct {
     // registerColor('diffEditor.removedTextBackground', { dark: '#ff000033', light: '#ff000033', hcDark: null, hcLight: null }, nls.localize('diffEditorRemoved', 'Background color for text that got removed. The color must not be opaque so as not to hide underlying decorations.'), true);
     fn @"diffEditor.removedTextBackground"(_: usize, _: []const u8) Color {
         return .{ .color = 0xff0000, .alpha = 0x33 };
+    }
+
+    // registerColor('diffEditorGutter.insertedLineBackground', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('diffEditorInsertedLineGutter', 'Background color for the margin where lines got inserted.'));
+    fn @"diffEditorGutter.insertedLineBackground"(_: usize, _: []const u8) ?Color {
+        return null;
+    }
+
+    // registerColor('diffEditorGutter.removedLineBackground', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('diffEditorRemovedLineGutter', 'Background color for the margin where lines got removed.'));
+    fn @"diffEditorGutter.removedLineBackground"(_: usize, _: []const u8) ?Color {
+        return null;
     }
 
     // registerColor('editorWidget.foreground', { dark: foreground, light: foreground, hcDark: foreground, hcLight: foreground }, nls.localize('editorWidgetForeground', 'Foreground color of editor widgets, such as find/replace.'));
