@@ -398,8 +398,8 @@ fn parse_type_string(s: ?[]const u8) ?theme.Type {
 
 fn compute_theme_type(cb: []const u8) ?theme.Type {
     const bg = find_color("editor.background", cb) orelse return null;
-    const fg = find_color("editor.foreground", cb) orelse return null;
-    return if (luma_of(bg) < luma_of(fg)) .dark else .light;
+    const fg_luma: u32 = if (find_color("editor.foreground", cb)) |fg| luma_of(fg) else 128;
+    return if (luma_of(bg) < fg_luma) .dark else .light;
 }
 
 fn parse_color_value_checked(s: []const u8) !Color {
