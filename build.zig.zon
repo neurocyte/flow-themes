@@ -1,7 +1,7 @@
 .{
     .name = .flow_themes,
     .version = "0.7.2",
-    .minimum_zig_version = "0.17.0-dev.2122+3e15e99e6",
+    .minimum_zig_version = "0.17.0",
     .fingerprint = 0x4c6fd5b6412e42ff,
 
     .dependencies = .{
