@@ -1192,7 +1192,7 @@ const defaults = struct {
     }
 
     fn @"tab.unfocusedActiveBackground"(type_idx: usize, cb: []const u8) ?Color {
-        return derive_style.tab_inactive(type_idx, cb).fg;
+        return derive_style.tab_active(type_idx, cb).bg;
     }
 
     fn @"tab.unfocusedActiveForeground"(type_idx: usize, cb: []const u8) ?Color {
@@ -1203,7 +1203,7 @@ const defaults = struct {
     }
 
     fn @"tab.unfocusedInactiveBackground"(type_idx: usize, cb: []const u8) ?Color {
-        return derive_style.tab_active(type_idx, cb).fg;
+        return derive_style.tab_inactive(type_idx, cb).bg;
     }
 
     fn @"tab.unfocusedInactiveForeground"(type_idx: usize, cb: []const u8) ?Color {
