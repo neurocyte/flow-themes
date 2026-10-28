@@ -127,6 +127,7 @@ fn load_json(theme_: *theme_file) theme {
         .tab_selected = derive_style.tab_selected(type_idx, cb),
         .tab_unfocused_active = derive_style.tab_unfocused_active(type_idx, cb),
         .tab_unfocused_inactive = derive_style.tab_unfocused_inactive(type_idx, cb),
+        .tab_bar = derive_style.tab_bar(type_idx, cb),
         .ansi_black = derive_style.ansi_black(type_idx, cb),
         .ansi_red = derive_style.ansi_red(type_idx, cb),
         .ansi_green = derive_style.ansi_green(type_idx, cb),
@@ -767,6 +768,13 @@ const derive_style = struct {
         };
     }
 
+    fn tab_bar(type_idx: usize, cb: []const u8) Style {
+        return .{
+            .fg = derive_style.tab_inactive(type_idx, cb).fg,
+            .bg = if (find_color("editorGroupHeader.tabsBackground", cb)) |col| col else defaults.@"editorGroupHeader.tabsBackground"(type_idx, cb),
+        };
+    }
+
     fn ansi_black(type_idx: usize, cb: []const u8) Color {
         return if (find_color("terminal.ansiBlack", cb)) |col| col else defaults.@"terminal.ansiBlack"(type_idx, cb).?;
     }
@@ -1211,6 +1219,11 @@ const defaults = struct {
             .{ .color = derive_style.tab_inactive(type_idx, cb).fg.?.color, .alpha = 256 / 2 },
             .{ .color = derive_style.tab_inactive(type_idx, cb).fg.?.color, .alpha = 256 / 2 },
         })[type_idx];
+    }
+
+    // registerColor('editorGroupHeader.tabsBackground', { dark: '#252526', light: '#F3F3F3', },
+    fn @"editorGroupHeader.tabsBackground"(type_idx: usize, _: []const u8) ?Color {
+        return ([2]Color{ .{ .color = 0x252526 }, .{ .color = 0xF3F3F3 } })[type_idx];
     }
 
     // 'terminal.ansiBlack': index: 0, dark: '#000000', light: '#000000',

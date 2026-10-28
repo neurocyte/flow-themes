@@ -45,6 +45,7 @@ tab_inactive: Style,
 tab_selected: Style,
 tab_unfocused_active: Style,
 tab_unfocused_inactive: Style,
+tab_bar: Style,
 
 ansi_black: Color,
 ansi_red: Color,
