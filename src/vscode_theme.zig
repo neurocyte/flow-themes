@@ -6,7 +6,12 @@ const eql = std.mem.eql;
 const Color = theme.Color;
 const Style = theme.Style;
 const Token = theme.Token;
-const TokenMap = std.StringHashMap(Style);
+const TokenMap = std.StringHashMap(Rule);
+
+const Rule = struct {
+    style: Style,
+    selector: enum { plain, descendant },
+};
 
 pub const Error = error{ OutOfMemory, InvalidTheme, IncludeNotFound };
 
@@ -305,7 +310,7 @@ fn load_tokens(src: Source, context: Context) Error![]Token {
     var i: usize = 0;
     while (iter.next()) |token| : (i += 1) entries[i] = .{
         .scope = token.key_ptr.*,
-        .token = .{ .id = try context.vtable.scope_id(context.ptr, token.key_ptr.*), .style = token.value_ptr.* },
+        .token = .{ .id = try context.vtable.scope_id(context.ptr, token.key_ptr.*), .style = token.value_ptr.style },
     };
     std.sort.pdq(Entry, entries, {}, struct {
         fn less_than(_: void, lhs: Entry, rhs: Entry) bool {
@@ -474,7 +479,11 @@ fn load_scopes_string(tokens: *TokenMap, style: Style, scopes_: []const u8) erro
         const selector = std.mem.trim(u8, raw, " ");
         if (selector.len == 0) continue;
         const target = if (std.mem.findScalarLast(u8, selector, ' ')) |i| selector[i + 1 ..] else selector;
-        if (target.len > 0) try tokens.put(target, style);
+        if (target.len == 0) continue;
+        const rule: Rule = .{ .style = style, .selector = if (target.len < selector.len) .descendant else .plain };
+        const entry = try tokens.getOrPut(target);
+        if (entry.found_existing and entry.value_ptr.selector == .plain and rule.selector == .descendant) continue;
+        entry.value_ptr.* = rule;
     }
 }
 
@@ -1483,7 +1492,7 @@ test "load with include" {
         \\    "editor.selectionBackground": "",
         \\  },
         \\  "tokenColors": [
-        \\    { "scope": "source string", "settings": { "foreground": "#333333", "fontStyle": "bold italic", "unknownKey": 1 } },
+        \\    { "scope": ["source string", "source number"], "settings": { "foreground": "#333333", "fontStyle": "bold italic", "unknownKey": 1 } },
         \\    { "settings": { "foreground": "#444444" } },
         \\  ],
         \\}
@@ -1502,11 +1511,13 @@ test "load with include" {
     try testing.expectEqual(Color{ .color = 0x010203 }, t.statusbar.bg.?);
     try testing.expectEqual(Color{ .color = 0x264F78 }, t.editor_selection.bg.?);
 
-    try testing.expectEqual(3, t.tokens.len);
+    // "source string" does not replace the plain "string" of base.json
+    try testing.expectEqual(4, t.tokens.len);
     const expected = [_]struct { []const u8, u24, ?theme.FontStyle }{
         .{ "comment", 0x111111, null },
         .{ "keyword", 0x222222, null },
-        .{ "string", 0x333333, .bold_italic },
+        .{ "number", 0x333333, .bold_italic },
+        .{ "string", 0x222222, null },
     };
     for (expected, t.tokens) |e, token| {
         try testing.expectEqualStrings(e[0], ctx.scopes.items[token.id]);
