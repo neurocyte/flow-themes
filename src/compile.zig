@@ -1,4 +1,3 @@
-const cbor = @import("cbor");
 const std = @import("std");
 const eql = std.mem.eql;
 
@@ -17,27 +16,26 @@ const context: vscode_theme.Context = .{
     .vtable = &.{ .include = include, .scope_id = scope_id },
 };
 
-fn include(ptr: *anyopaque, file_name: []const u8) ?[]const u8 {
+fn include(ptr: *anyopaque, file_name: []const u8) vscode_theme.Error![]const u8 {
     const files: *@TypeOf(theme_files) = @ptrCast(@alignCast(ptr));
     for (files) |*tf| {
         if (eql(u8, std.fs.path.basename(file_name), std.fs.path.basename(tf.file_name)))
             return load_cbor(tf);
     }
-    return null;
+    return error.IncludeNotFound;
 }
 
-fn scope_id(_: *anyopaque, scope: []const u8) usize {
+fn scope_id(_: *anyopaque, scope: []const u8) error{OutOfMemory}!usize {
     if (scopes.get(scope)) |id| return id;
-    (scopes_vec.addOne(allocator) catch unreachable).* = scope;
+    try scopes_vec.append(allocator, scope);
     const id = scopes_vec.items.len - 1;
-    scopes.put(scope, id) catch unreachable;
+    try scopes.put(scope, id);
     return id;
 }
 
-fn load_cbor(theme_: *theme_file) []const u8 {
+fn load_cbor(theme_: *theme_file) error{ OutOfMemory, InvalidTheme }![]const u8 {
     if (theme_.cbor) |cb| return cb;
-    const buf = allocator.alloc(u8, theme_.json.len) catch unreachable;
-    const cb = cbor.fromJson(theme_.json, buf) catch unreachable;
+    const cb = try vscode_theme.to_cbor(allocator, theme_.file_name, theme_.json, null);
     theme_.cbor = cb;
     return cb;
 }
@@ -134,9 +132,8 @@ fn write_all_themes(io: std.Io, writer: *std.Io.Writer) !void {
     for (&theme_files) |*file| {
         try write_file(io, "themes", std.fs.path.basename(file.file_name), file.json);
         std.log.info("theme: {s}", .{std.fs.path.basename(file.file_name)});
-        file.json = try hjson(io, file.json);
-        // try write_file("cleaned", std.fs.path.basename(file.file_name), file.json);
-        const theme_ = vscode_theme.load(allocator, context, file.file_name, load_cbor(file));
+        const theme_ = vscode_theme.load(allocator, context, file.file_name, try load_cbor(file), .{ .strict = true }) catch |e|
+            fatal("failed to load theme {s}: {t}", .{ file.file_name, e });
         try write_theme(writer, theme_);
     }
     _ = try writer.write("};\n\n");
@@ -180,32 +177,6 @@ pub fn main(init: std.process.Init) !void {
 fn fatal(comptime format: []const u8, args: anytype) noreturn {
     std.log.err(format, args);
     std.process.exit(1);
-}
-
-fn hjson(io: std.Io, data: []const u8) ![]const u8 {
-    const cmd = [_][]const u8{ "hjson", "-j" };
-    var child = try std.process.spawn(io, .{
-        .argv = &cmd,
-        .stdin = .pipe,
-        .stdout = .pipe,
-        .stderr = .pipe,
-    });
-    var stdin_buf: [4096]u8 = undefined;
-    var stdin_writer = std.Io.File.writer(child.stdin.?, io, &stdin_buf);
-    try stdin_writer.interface.writeAll(data);
-    try stdin_writer.flush();
-    child.stdin.?.close(io);
-    child.stdin = null;
-    var out: std.Io.Writer.Allocating = .init(allocator);
-    var stdout_buf: [4096]u8 = undefined;
-    var stdout_reader = std.Io.File.reader(child.stdout.?, io, &stdout_buf);
-    _ = try stdout_reader.interface.streamRemaining(&out.writer);
-    const term = child.wait(io) catch |e| std.debug.panic("error running hjson: {any}", .{e});
-    switch (term) {
-        .exited => |code| if (code == 0) return out.toOwnedSlice(),
-        else => {},
-    }
-    std.debug.panic("Exited with code {any}", .{term});
 }
 
 fn write_file(io: std.Io, dir: []const u8, file_name: []const u8, data: []const u8) !void {

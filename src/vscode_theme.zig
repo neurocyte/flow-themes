@@ -8,67 +8,161 @@ const Style = theme.Style;
 const Token = theme.Token;
 const TokenMap = std.StringHashMap(Style);
 
+pub const Error = error{ OutOfMemory, InvalidTheme, IncludeNotFound };
+
+pub const Options = struct {
+    /// fail on unknown token settings and invalid colors instead of skipping them
+    strict: bool = false,
+    /// receives the error message instead of std.log
+    diagnostic: ?*Diagnostic = null,
+};
+
+pub const Diagnostic = struct {
+    buf: [512]u8 = undefined,
+    len: usize = 0,
+
+    pub fn message(self: *const Diagnostic) []const u8 {
+        return self.buf[0..self.len];
+    }
+
+    pub fn fail(diagnostic: ?*Diagnostic, file_name: []const u8, comptime format: []const u8, args: anytype) error{InvalidTheme} {
+        if (diagnostic) |self| {
+            const written = std.fmt.bufPrint(&self.buf, "{s}: " ++ format, .{file_name} ++ args) catch self.buf[0..];
+            self.len = written.len;
+        } else std.log.err("{s}: " ++ format, .{file_name} ++ args);
+        return error.InvalidTheme;
+    }
+};
+
 pub const Context = struct {
     ptr: *anyopaque,
     vtable: *const VTable,
 
     pub const VTable = struct {
-        /// cbor of the theme file named by an "include" field
-        include: *const fn (ptr: *anyopaque, file_name: []const u8) ?[]const u8,
-        scope_id: *const fn (ptr: *anyopaque, scope: []const u8) usize,
+        /// cbor of the theme file named by an "include" field; must stay valid until load returns
+        include: *const fn (ptr: *anyopaque, file_name: []const u8) Error![]const u8,
+        scope_id: *const fn (ptr: *anyopaque, scope: []const u8) error{OutOfMemory}!usize,
     };
-
-    fn include(self: Context, file_name: []const u8) []const u8 {
-        return self.vtable.include(self.ptr, file_name) orelse {
-            std.log.err("failed to find include file: {s}", .{std.fs.path.basename(file_name)});
-            unreachable;
-        };
-    }
-
-    fn scope_id(self: Context, scope: []const u8) usize {
-        return self.vtable.scope_id(self.ptr, scope);
-    }
 };
+
+const max_include_depth = 8;
 
 const Source = struct {
     allocator: std.mem.Allocator,
-    context: Context,
+    options: Options,
+    file_name: []const u8,
     cb: []const u8,
+    include: ?*const Source = null,
 
-    fn included(self: Source, cb: []const u8) Source {
-        return .{ .allocator = self.allocator, .context = self.context, .cb = cb };
+    fn invalid(self: Source, comptime format: []const u8, args: anytype) error{InvalidTheme} {
+        return Diagnostic.fail(self.options.diagnostic, self.file_name, format, args);
     }
 };
 
-/// The returned theme references file_name and cb. The caller owns theme.tokens.
-pub fn load(allocator: std.mem.Allocator, context: Context, file_name: []const u8, cb: []const u8) theme {
-    const src: Source = .{ .allocator = allocator, .context = context, .cb = cb };
+/// Convert JSONC theme text to cbor. The caller owns the returned slice.
+pub fn to_cbor(allocator: std.mem.Allocator, file_name: []const u8, jsonc: []const u8, diagnostic: ?*Diagnostic) error{ OutOfMemory, InvalidTheme }![]const u8 {
+    const json = strip_jsonc(allocator, jsonc) catch |e| switch (e) {
+        error.OutOfMemory => return error.OutOfMemory,
+        error.UnterminatedComment => return Diagnostic.fail(diagnostic, file_name, "unterminated comment", .{}),
+    };
+    defer allocator.free(json);
+    return cbor.fromJsonAlloc(allocator, json) catch |e| switch (e) {
+        error.OutOfMemory => return error.OutOfMemory,
+        else => return Diagnostic.fail(diagnostic, file_name, "invalid JSON: {t}", .{e}),
+    };
+}
 
-    const basename = std.fs.path.basename(file_name);
-    const suffix = std.mem.lastIndexOf(u8, basename, "-color-theme");
-    const ext = std.mem.lastIndexOf(u8, basename, ".json");
-    const name: []const u8 = if (suffix) |pos| basename[0..pos] else if (ext) |pos| basename[0..pos] else basename;
-    var description: ?[]const u8 = null;
-    var theme_type: ?[]const u8 = null;
-    var iter = cb;
-    var len = cbor.decodeMapHeader(&iter) catch unreachable;
+/// Remove comments and trailing commas. The caller owns the returned slice.
+pub fn strip_jsonc(allocator: std.mem.Allocator, input: []const u8) error{ OutOfMemory, UnterminatedComment }![]u8 {
+    const out = try allocator.alloc(u8, input.len);
+    errdefer allocator.free(out);
 
-    while (len > 0) : (len -= 1) {
-        var field_name: []const u8 = undefined;
-        if (!(cbor.matchString(&iter, &field_name) catch unreachable)) unreachable;
-        if (eql(u8, "name", field_name)) {
-            var description_: []const u8 = undefined;
-            if (!(cbor.matchString(&iter, &description_) catch unreachable)) unreachable;
-            description = description_;
-        } else if (eql(u8, "type", field_name)) {
-            var theme_type_: []const u8 = undefined;
-            if (!(cbor.matchString(&iter, &theme_type_) catch unreachable)) unreachable;
-            theme_type = theme_type_;
+    var len: usize = 0;
+    var i: usize = 0;
+    while (i < input.len) {
+        if (input[i] == '"') {
+            const end = string_end(input, i);
+            @memcpy(out[len..][0 .. end - i], input[i..end]);
+            len += end - i;
+            i = end;
+        } else if (std.mem.startsWith(u8, input[i..], "//")) {
+            i = std.mem.findScalarPos(u8, input, i, '\n') orelse input.len;
+        } else if (std.mem.startsWith(u8, input[i..], "/*")) {
+            const end = std.mem.findPos(u8, input, i + 2, "*/") orelse return error.UnterminatedComment;
+            out[len] = ' ';
+            len += 1;
+            i = end + 2;
         } else {
-            cbor.skipValue(&iter) catch unreachable;
+            out[len] = input[i];
+            len += 1;
+            i += 1;
         }
     }
-    const declared = parse_type_string(theme_type);
+
+    var result: usize = 0;
+    i = 0;
+    while (i < len) {
+        if (out[i] == '"') {
+            const end = string_end(out[0..len], i);
+            std.mem.copyForwards(u8, out[result..], out[i..end]);
+            result += end - i;
+            i = end;
+            continue;
+        }
+        if (out[i] == ',') {
+            const next = std.mem.findNonePos(u8, out[0..len], i + 1, " \t\r\n") orelse len;
+            if (next < len and (out[next] == '}' or out[next] == ']')) {
+                i += 1;
+                continue;
+            }
+        }
+        out[result] = out[i];
+        result += 1;
+        i += 1;
+    }
+    return allocator.realloc(out, result);
+}
+
+fn string_end(input: []const u8, start: usize) usize {
+    var i = start + 1;
+    while (i < input.len) : (i += 1) switch (input[i]) {
+        '\\' => i += 1,
+        '"' => return i + 1,
+        else => {},
+    };
+    return input.len;
+}
+
+/// The returned theme references file_name and cb. The caller owns theme.tokens.
+pub fn load(allocator: std.mem.Allocator, context: Context, file_name: []const u8, cb: []const u8, options: Options) Error!theme {
+    var chain: [max_include_depth]Source = undefined;
+    chain[0] = .{ .allocator = allocator, .options = options, .file_name = std.fs.path.basename(file_name), .cb = cb };
+    const meta = try load_meta(chain[0]);
+    var include = meta.include;
+    var depth: usize = 1;
+    while (include) |include_name| : (depth += 1) {
+        if (depth == max_include_depth) return chain[0].invalid("too many nested includes", .{});
+        chain[depth] = .{
+            .allocator = allocator,
+            .options = options,
+            .file_name = std.fs.path.basename(include_name),
+            .cb = context.vtable.include(context.ptr, include_name) catch |e| switch (e) {
+                error.IncludeNotFound => return chain[depth - 1].invalid("include '{s}' not found", .{include_name}),
+                else => return e,
+            },
+        };
+        chain[depth - 1].include = &chain[depth];
+        include = (try load_meta(chain[depth])).include;
+    }
+    const src = chain[0];
+    for (chain[0..depth]) |s| try check_colors(s);
+
+    const basename = src.file_name;
+    const suffix = std.mem.findLast(u8, basename, "-color-theme");
+    const ext = std.mem.findLast(u8, basename, ".json");
+    const name: []const u8 = if (suffix) |pos| basename[0..pos] else if (ext) |pos| basename[0..pos] else basename;
+
+    const declared = parse_type_string(meta.type);
     const computed = compute_theme_type(src);
     const final_type: theme.Type = computed orelse declared orelse .dark;
 
@@ -78,7 +172,7 @@ pub fn load(allocator: std.mem.Allocator, context: Context, file_name: []const u
                 "warning: theme '{s}' declares type '{t}' but editor luma indicates '{t}'; using '{t}'",
                 .{ name, d, c, c },
             );
-        } else if (theme_type) |raw| {
+        } else if (meta.type) |raw| {
             std.log.warn(
                 "warning: theme '{s}' has unrecognized type '{s}'; using computed '{t}'",
                 .{ name, raw, c },
@@ -89,19 +183,19 @@ pub fn load(allocator: std.mem.Allocator, context: Context, file_name: []const u
                 .{ name, c },
             );
         }
-    } else if (declared == null and theme_type != null) {
+    } else if (declared == null and meta.type != null) {
         std.log.warn(
             "warning: theme '{s}' has unrecognized type '{s}' and no explicit editor colors to derive from; defaulting to 'dark'",
-            .{ name, theme_type.? },
+            .{ name, meta.type.? },
         );
     }
 
     const type_idx: usize = if (final_type == .light) @as(usize, 1) else 0;
     var result: theme = undefined;
     result.name = name;
-    result.description = description orelse name;
+    result.description = meta.name orelse name;
     result.type = final_type;
-    result.tokens = load_tokens(src, basename);
+    result.tokens = try load_tokens(src, context);
     result.scope_type = .text_mate;
     inline for (@typeInfo(theme).@"struct".field_names) |field_name| {
         if (comptime @hasDecl(derive_style, field_name))
@@ -117,18 +211,101 @@ fn is_one_of(comptime name: []const u8, comptime names: []const []const u8) bool
     return false;
 }
 
-fn load_tokens(src: Source, file_name: []const u8) []Token {
-    var tokens = load_token_colors(file_name, src);
+const Meta = struct {
+    name: ?[]const u8 = null,
+    type: ?[]const u8 = null,
+    include: ?[]const u8 = null,
+};
+
+fn load_meta(src: Source) error{InvalidTheme}!Meta {
+    var meta: Meta = .{};
+    var iter = src.cb;
+    var len = cbor.decodeMapHeader(&iter) catch return src.invalid("theme is not a JSON object", .{});
+    while (len > 0) : (len -= 1) {
+        var field_name: []const u8 = undefined;
+        if (!(cbor.matchString(&iter, &field_name) catch false)) return src.invalid("invalid field name", .{});
+        const field: *?[]const u8 = if (eql(u8, "name", field_name))
+            &meta.name
+        else if (eql(u8, "type", field_name))
+            &meta.type
+        else if (eql(u8, "include", field_name))
+            &meta.include
+        else {
+            cbor.skipValue(&iter) catch return src.invalid("invalid value for '{s}'", .{field_name});
+            continue;
+        };
+        var value: []const u8 = undefined;
+        if (!(cbor.matchString(&iter, &value) catch false)) return src.invalid("'{s}' is not a string", .{field_name});
+        field.* = value;
+    }
+    return meta;
+}
+
+fn check_colors(src: Source) error{InvalidTheme}!void {
+    var iter = colors_map(src) orelse return;
+    var len = cbor.decodeMapHeader(&iter) catch return src.invalid("'colors' is not an object", .{});
+    while (len > 0) : (len -= 1) {
+        var field_name: []const u8 = undefined;
+        if (!(cbor.matchString(&iter, &field_name) catch false)) return src.invalid("invalid 'colors' entry", .{});
+        var value: []const u8 = undefined;
+        if (cbor.matchString(&iter, &value) catch false) {
+            if (value.len == 0 or parse_color(value) != null) continue;
+            if (src.options.strict) return src.invalid("invalid color '{s}' for 'colors.{s}'", .{ value, field_name });
+            std.log.warn("{s}: ignoring invalid color '{s}' for 'colors.{s}'", .{ src.file_name, value, field_name });
+        } else {
+            if (src.options.strict) return src.invalid("'colors.{s}' is not a string", .{field_name});
+            std.log.warn("{s}: ignoring non-string 'colors.{s}'", .{ src.file_name, field_name });
+            cbor.skipValue(&iter) catch return src.invalid("invalid value for 'colors.{s}'", .{field_name});
+        }
+    }
+}
+
+fn colors_map(src: Source) ?[]const u8 {
+    var iter = src.cb;
+    var len = cbor.decodeMapHeader(&iter) catch return null;
+    while (len > 0) : (len -= 1) {
+        var field_name: []const u8 = undefined;
+        if (!(cbor.matchString(&iter, &field_name) catch return null)) return null;
+        if (eql(u8, "colors", field_name)) return iter;
+        cbor.skipValue(&iter) catch return null;
+    }
+    return null;
+}
+
+fn find_color(name: []const u8, src: Source) ?Color {
+    if (colors_map(src)) |colors| if (find_in_colors(name, colors)) |color| return color;
+    return if (src.include) |include| find_color(name, include.*) else null;
+}
+
+/// the last valid entry wins, as in JavaScript
+fn find_in_colors(name: []const u8, colors: []const u8) ?Color {
+    var iter = colors;
+    var len = cbor.decodeMapHeader(&iter) catch return null;
+    var match: ?Color = null;
+    while (len > 0) : (len -= 1) {
+        var field_name: []const u8 = undefined;
+        if (!(cbor.matchString(&iter, &field_name) catch return match)) return match;
+        var value: []const u8 = undefined;
+        if (cbor.matchString(&iter, &value) catch return match) {
+            if (eql(u8, field_name, name)) match = parse_color(value) orelse match;
+        } else cbor.skipValue(&iter) catch return match;
+    }
+    return match;
+}
+
+fn load_tokens(src: Source, context: Context) Error![]Token {
+    var tokens: TokenMap = .init(src.allocator);
     defer tokens.deinit();
+    try load_token_colors(src, &tokens);
 
     const Entry = struct { scope: []const u8, token: Token };
-    const entries = src.allocator.alloc(Entry, tokens.count()) catch unreachable;
+    const entries = try src.allocator.alloc(Entry, tokens.count());
     defer src.allocator.free(entries);
     var iter = tokens.iterator();
     var i: usize = 0;
     while (iter.next()) |token| : (i += 1) entries[i] = .{
         .scope = token.key_ptr.*,
-        .token = .{ .id = src.context.scope_id(token.key_ptr.*), .style = token.value_ptr.* },
+        .token = .{ .id = try context.vtable.scope_id(context.ptr, token.key_ptr.*), .style = token.value_ptr.* },
     };
     std.sort.pdq(Entry, entries, {}, struct {
         fn less_than(_: void, lhs: Entry, rhs: Entry) bool {
@@ -136,216 +313,155 @@ fn load_tokens(src: Source, file_name: []const u8) []Token {
         }
     }.less_than);
 
-    const result = src.allocator.alloc(Token, entries.len) catch unreachable;
+    const result = try src.allocator.alloc(Token, entries.len);
     for (entries, result) |entry, *token| token.* = entry.token;
     return result;
 }
 
-fn load_token_colors(file_name: []const u8, src: Source) TokenMap {
+/// included token colors come first, so the including theme overrides them
+fn load_token_colors(src: Source, tokens: *TokenMap) Error!void {
+    if (src.include) |include| try load_token_colors(include.*, tokens);
     var iter = src.cb;
-    var len = cbor.decodeMapHeader(&iter) catch unreachable;
-    var tokens_cb: ?[]const u8 = null;
-    var include: ?[]const u8 = null;
+    var len = cbor.decodeMapHeader(&iter) catch return src.invalid("theme is not a JSON object", .{});
     while (len > 0) : (len -= 1) {
         var field_name: []const u8 = undefined;
-        if (!(cbor.matchString(&iter, &field_name) catch unreachable)) unreachable;
-        if (eql(u8, "tokenColors", field_name)) {
+        if (!(cbor.matchString(&iter, &field_name) catch false)) return src.invalid("invalid field name", .{});
+        if (!eql(u8, "tokenColors", field_name)) {
+            cbor.skipValue(&iter) catch return src.invalid("invalid value for '{s}'", .{field_name});
+            continue;
+        }
+        var count = cbor.decodeArrayHeader(&iter) catch
+            return src.invalid("'tokenColors' is not an array (tokenColors files are not supported)", .{});
+        while (count > 0) : (count -= 1) {
             var value: []const u8 = undefined;
-            if (!(cbor.matchValue(&iter, cbor.extract_cbor(&value)) catch unreachable)) unreachable;
-            tokens_cb = value;
-        } else if (eql(u8, "include", field_name)) {
-            var value: []const u8 = undefined;
-            if (!(cbor.matchString(&iter, &value) catch unreachable)) unreachable;
-            include = value;
-        } else {
-            cbor.skipValue(&iter) catch unreachable;
+            if (!(cbor.matchValue(&iter, cbor.extract_cbor(&value)) catch false)) return src.invalid("invalid 'tokenColors' entry", .{});
+            try load_token_object(src, tokens, value);
         }
     }
-    var tokens = if (include) |inc|
-        load_token_colors(file_name, src.included(src.context.include(inc)))
-    else
-        TokenMap.init(src.allocator);
-    if (tokens_cb) |cb_| load_token_colors_array(file_name, &tokens, cb_);
-    return tokens;
 }
 
-fn load_token_colors_array(file_name: []const u8, tokens: *TokenMap, cb: []const u8) void {
+fn load_token_object(src: Source, tokens: *TokenMap, cb: []const u8) Error!void {
     var iter = cb;
-    var len = cbor.decodeArrayHeader(&iter) catch unreachable;
-    while (len > 0) : (len -= 1) {
-        var value: []const u8 = undefined;
-        if (!(cbor.matchValue(&iter, cbor.extract_cbor(&value)) catch unreachable)) unreachable;
-        load_token_object(file_name, tokens, value);
-    }
-}
-
-fn load_token_object(file_name: []const u8, tokens: *TokenMap, cb: []const u8) void {
-    var iter = cb;
-    var len = cbor.decodeMapHeader(&iter) catch {
-        iter = cb;
-        const t = cbor.decodeType(&iter) catch unreachable;
-        std.debug.panic("unexpected type for token object: {any}", .{t});
-    };
+    var len = cbor.decodeMapHeader(&iter) catch return src.invalid("'tokenColors' entry is not an object", .{});
     var scopes_cb: ?[]const u8 = null;
     var scopes_name: ?[]const u8 = null;
-    var style: ?Style = null;
+    var settings_cb: ?[]const u8 = null;
     while (len > 0) : (len -= 1) {
         var field_name: []const u8 = undefined;
-        if (!(cbor.matchString(&iter, &field_name) catch unreachable)) unreachable;
+        if (!(cbor.matchString(&iter, &field_name) catch false)) return src.invalid("invalid 'tokenColors' field name", .{});
         if (eql(u8, "scope", field_name)) {
             var value: []const u8 = undefined;
-            if (!(cbor.matchValue(&iter, cbor.extract_cbor(&value)) catch unreachable)) unreachable;
+            if (!(cbor.matchValue(&iter, cbor.extract_cbor(&value)) catch false)) return src.invalid("invalid 'scope'", .{});
             scopes_cb = value;
         } else if (eql(u8, "settings", field_name)) {
             var value: []const u8 = undefined;
-            if (!(cbor.matchValue(&iter, cbor.extract_cbor(&value)) catch unreachable)) unreachable;
-            style = load_token_settings_object(file_name, scopes_name, value);
+            if (!(cbor.matchValue(&iter, cbor.extract_cbor(&value)) catch false)) return src.invalid("invalid 'settings'", .{});
+            settings_cb = value;
         } else if (eql(u8, "name", field_name)) {
             var value: []const u8 = undefined;
-            if (!(cbor.matchString(&iter, &value) catch unreachable)) unreachable;
+            if (!(cbor.matchString(&iter, &value) catch false)) return src.invalid("token 'name' is not a string", .{});
             scopes_name = value;
         } else {
-            cbor.skipValue(&iter) catch unreachable;
+            cbor.skipValue(&iter) catch return src.invalid("invalid value for token field '{s}'", .{field_name});
         }
     }
-    if (style) |sty| if (scopes_cb) |cb_| load_scopes(tokens, sty, cb_);
+    const style = try load_token_settings_object(src, scopes_name, settings_cb orelse return);
+    if (scopes_cb) |cb_| try load_scopes(src, tokens, style, cb_);
 }
 
-fn load_token_settings_object(file_name: []const u8, scopes_name: ?[]const u8, cb: []const u8) Style {
+fn load_token_settings_object(src: Source, scopes_name: ?[]const u8, cb: []const u8) Error!Style {
+    const token_name = scopes_name orelse "unknown";
     var iter = cb;
-    var len = cbor.decodeMapHeader(&iter) catch unreachable;
+    var len = cbor.decodeMapHeader(&iter) catch return src.invalid("settings of '{s}' is not an object", .{token_name});
     var style: Style = .{};
     while (len > 0) : (len -= 1) {
         var field_name: []const u8 = undefined;
-        if (!(cbor.matchString(&iter, &field_name) catch unreachable)) unreachable;
-        if (eql(u8, "foreground", field_name)) {
-            var value: []const u8 = undefined;
-            if (!(cbor.matchString(&iter, &value) catch unreachable)) unreachable;
-            style.fg = parse_color_value(value);
-        } else if (eql(u8, "background", field_name)) {
-            var value: []const u8 = undefined;
-            if (!(cbor.matchString(&iter, &value) catch unreachable)) unreachable;
-            style.bg = parse_color_value(value);
-        } else if (eql(u8, "fontStyle", field_name)) {
-            var value: []const u8 = undefined;
-            if (!(cbor.matchString(&iter, &value) catch unreachable)) unreachable;
-            if (eql(u8, "italic", value)) {
-                style.fs = .italic;
-            } else if (eql(u8, "bold", value)) {
-                style.fs = .bold;
-            } else if (eql(u8, "underline", value)) {
-                style.fs = .underline;
-            } else if (eql(u8, "italic underline", value)) {
-                style.fs = .italic;
-                style.fs = .underline;
-            } else if (eql(u8, "bold italic", value)) {
-                style.fs = .bold;
-                style.fs = .italic;
-            } else if (eql(u8, "italic bold", value)) {
-                style.fs = .bold;
-                style.fs = .italic;
-            } else if (eql(u8, "strikethrough", value)) {
-                style.fs = .strikethrough;
-            } else if (eql(u8, "normal", value)) {
-                style.fs = .normal;
-            } else if (eql(u8, "regular", value)) {
-                style.fs = .normal;
-            } else if (eql(u8, "", value)) {
-                style.fs = .normal;
-            } else {
-                std.debug.panic("unhandled fontStyle \"{s}\" in {s} -> {s}", .{ value, file_name, scopes_name orelse "unknown" });
-            }
-        } else if (eql(u8, "caret", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "invisibles", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "lineHighlight", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "selection", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "findHighlight", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "findHighlightForeground", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "selectionBorder", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "activeGuide", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "bracketsForeground", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "bracketsOptions", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "bracketContentsForeground", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "bracketContentsOptions", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else if (eql(u8, "tagsOptions", field_name)) {
-            cbor.skipValue(&iter) catch unreachable;
-        } else {
-            std.debug.panic("unhandled style case \"{s}\" in {s} -> {s}", .{ field_name, file_name, scopes_name orelse "unknown" });
+        if (!(cbor.matchString(&iter, &field_name) catch false)) return src.invalid("invalid settings field name in '{s}'", .{token_name});
+        const field = std.meta.stringToEnum(SettingsField, field_name) orelse {
+            if (src.options.strict) return src.invalid("unhandled style case \"{s}\" in '{s}'", .{ field_name, token_name });
+            cbor.skipValue(&iter) catch return src.invalid("invalid value for '{s}' in '{s}'", .{ field_name, token_name });
+            continue;
+        };
+        switch (field) {
+            .foreground, .background => {
+                var value: []const u8 = undefined;
+                if (!(cbor.matchString(&iter, &value) catch false))
+                    return src.invalid("'{s}' in '{s}' is not a string", .{ field_name, token_name });
+                const color = parse_color(value) orelse
+                    return src.invalid("invalid color '{s}' for '{s}' in '{s}'", .{ value, field_name, token_name });
+                if (field == .foreground) style.fg = color else style.bg = color;
+            },
+            .fontStyle => {
+                var value: []const u8 = undefined;
+                if (!(cbor.matchString(&iter, &value) catch false))
+                    return src.invalid("'fontStyle' in '{s}' is not a string", .{token_name});
+                // only one style fits in Style.fs, the last one wins
+                if (font_styles.get(value)) |fs| {
+                    style.fs = fs;
+                } else {
+                    if (src.options.strict) return src.invalid("unhandled fontStyle \"{s}\" in '{s}'", .{ value, token_name });
+                    std.log.warn("{s}: ignoring unknown fontStyle \"{s}\" in '{s}'", .{ src.file_name, value, token_name });
+                }
+            },
+            else => cbor.skipValue(&iter) catch return src.invalid("invalid value for '{s}' in '{s}'", .{ field_name, token_name }),
         }
     }
     return style;
 }
 
-fn load_scopes(tokens: *TokenMap, style: Style, cb: []const u8) void {
+const SettingsField = enum {
+    foreground,
+    background,
+    fontStyle,
+    caret,
+    invisibles,
+    lineHighlight,
+    selection,
+    findHighlight,
+    findHighlightForeground,
+    selectionBorder,
+    activeGuide,
+    bracketsForeground,
+    bracketsOptions,
+    bracketContentsForeground,
+    bracketContentsOptions,
+    tagsOptions,
+};
+
+const font_styles: std.StaticStringMap(theme.FontStyle) = .initComptime(.{
+    .{ "italic", .italic },
+    .{ "bold", .bold },
+    .{ "underline", .underline },
+    .{ "italic underline", .underline },
+    .{ "bold italic", .italic },
+    .{ "italic bold", .italic },
+    .{ "strikethrough", .strikethrough },
+    .{ "normal", .normal },
+    .{ "regular", .normal },
+    .{ "", .normal },
+});
+
+fn load_scopes(src: Source, tokens: *TokenMap, style: Style, cb: []const u8) Error!void {
     var iter = cb;
-    var len = cbor.decodeArrayHeader(&iter) catch {
-        iter = cb;
-        var value: []const u8 = undefined;
-        if (!(cbor.matchString(&iter, &value) catch unreachable)) unreachable;
-        load_scopes_string(tokens, style, value);
-        return;
-    };
+    var value: []const u8 = undefined;
+    if (cbor.matchString(&iter, &value) catch false)
+        return load_scopes_string(tokens, style, value);
+    iter = cb;
+    var len = cbor.decodeArrayHeader(&iter) catch return src.invalid("'scope' is not a string or an array", .{});
     while (len > 0) : (len -= 1) {
-        var value: []const u8 = undefined;
-        if (!(cbor.matchString(&iter, &value) catch unreachable)) unreachable;
-        load_scopes_string(tokens, style, value);
+        if (!(cbor.matchString(&iter, &value) catch false)) return src.invalid("'scope' entry is not a string", .{});
+        try load_scopes_string(tokens, style, value);
     }
 }
 
-fn load_scopes_string(tokens: *TokenMap, style: Style, scopes_: []const u8) void {
+fn load_scopes_string(tokens: *TokenMap, style: Style, scopes_: []const u8) error{OutOfMemory}!void {
     var it = std.mem.splitScalar(u8, scopes_, ',');
     while (it.next()) |raw| {
         const selector = std.mem.trim(u8, raw, " ");
         if (selector.len == 0) continue;
-        const target = if (std.mem.lastIndexOfScalar(u8, selector, ' ')) |i| selector[i + 1 ..] else selector;
-        if (target.len > 0) tokens.put(target, style) catch unreachable;
+        const target = if (std.mem.findScalarLast(u8, selector, ' ')) |i| selector[i + 1 ..] else selector;
+        if (target.len > 0) try tokens.put(target, style);
     }
-}
-
-fn find_color(name: []const u8, src: Source) ?Color {
-    var iter = src.cb;
-    var len = cbor.decodeMapHeader(&iter) catch unreachable;
-    var include: ?[]const u8 = null;
-    var match: ?Color = null;
-    while (len > 0) : (len -= 1) {
-        var field_name: []const u8 = undefined;
-        if (!(cbor.matchString(&iter, &field_name) catch unreachable)) unreachable;
-        if (eql(u8, "colors", field_name)) {
-            match = find_in_colors(name, &iter);
-        } else if (eql(u8, "include", field_name)) {
-            var value: []const u8 = undefined;
-            if (!(cbor.matchString(&iter, &value) catch unreachable)) unreachable;
-            include = value;
-        } else {
-            cbor.skipValue(&iter) catch unreachable;
-        }
-    }
-    return if (match) |v| v else if (include) |inc| find_color(name, src.included(src.context.include(inc))) else null;
-}
-
-fn find_in_colors(name: []const u8, iter: *[]const u8) ?Color {
-    var len = cbor.decodeMapHeader(iter) catch return null;
-    while (len > 0) : (len -= 1) {
-        var field_name: []const u8 = undefined;
-        var value: []const u8 = undefined;
-        if (!(cbor.matchString(iter, &field_name) catch unreachable)) unreachable;
-        if (!(cbor.matchString(iter, &value) catch unreachable)) unreachable;
-        if (eql(u8, field_name, name))
-            return parse_color_value(value);
-    }
-    return null;
 }
 
 fn luma_of(c: Color) u32 {
@@ -368,32 +484,26 @@ fn compute_theme_type(src: Source) ?theme.Type {
     return if (luma_of(bg) < fg_luma) .dark else .light;
 }
 
-fn parse_color_value_checked(s: []const u8) !Color {
-    const parseInt = @import("std").fmt.parseInt;
-    if (s[0] != '#' or s.len < 7 or s.len > 9) return error.Failed;
-    const r = try parseInt(u32, s[1..3], 16);
-    const b = try parseInt(u32, s[3..5], 16);
-    const g = try parseInt(u32, s[5..7], 16);
-    var color: Color = .{ .color = @truncate((r << 16) + (b << 8) + g) };
-    if (s.len > 7)
-        color.alpha = try parseInt(u8, s[7..], 16);
-    return color;
-}
-
-fn parse_color_value(s: []const u8) Color {
-    if (4 <= s.len and s.len <= 5) return parse_color_value_4bit(s);
-    return parse_color_value_checked(s) catch {
-        std.log.err("failed to parse color value: {s}", .{s});
-        unreachable;
+/// #rgb, #rgba, #rrggbb or #rrggbbaa
+fn parse_color(s: []const u8) ?Color {
+    if (s.len == 0 or s[0] != '#') return null;
+    const hex = s[1..];
+    for (hex) |c| if (!std.ascii.isHex(c)) return null;
+    var buf: [8]u8 = undefined;
+    const digits: []const u8 = switch (hex.len) {
+        3, 4 => blk: {
+            for (hex, 0..) |c, i| {
+                buf[i * 2] = c;
+                buf[i * 2 + 1] = c;
+            }
+            break :blk buf[0 .. hex.len * 2];
+        },
+        6, 8 => hex,
+        else => return null,
     };
-}
-
-fn parse_color_value_4bit(s: []const u8) Color {
-    const color = "#" ++ s[1..2] ++ s[1..2] ++ s[2..3] ++ s[2..3] ++ s[3..4] ++ s[3..4];
-    const expanded = if (s.len > 4) color ++ s[4..5] ++ s[4..5] else color;
-    return parse_color_value_checked(expanded) catch {
-        std.log.err("failed to parse expanded color value: {s} {s}", .{ s, expanded });
-        unreachable;
+    return .{
+        .color = std.fmt.parseInt(u24, digits[0..6], 16) catch unreachable,
+        .alpha = if (digits.len == 8) std.fmt.parseInt(u8, digits[6..8], 16) catch unreachable else 0xFF,
     };
 }
 
@@ -1267,3 +1377,139 @@ const defaults = struct {
         return ([2]Color{ .{ .color = 0xe5e5e5 }, .{ .color = 0xa5a5a5 } })[type_idx];
     }
 };
+
+const testing = std.testing;
+
+fn expect_stripped(expected: []const u8, input: []const u8) !void {
+    const result = try strip_jsonc(testing.allocator, input);
+    defer testing.allocator.free(result);
+    try testing.expectEqualStrings(expected, result);
+}
+
+test "strip_jsonc" {
+    try expect_stripped("{\"a\": 1}", "{\"a\": 1}");
+    try expect_stripped("{ \n  \"a\": 1 \n}", "{ // comment\n  \"a\": 1 // more\n}");
+    try expect_stripped("{   \"a\":   1}", "{ /* x */ \"a\": /* y\n z */ 1}");
+    try expect_stripped("{\"a\": [1, 2]\n}", "{\"a\": [1, 2,],\n}");
+    try expect_stripped("{\"a\": 1 \n}", "{\"a\": 1, // last\n}");
+    try expect_stripped("{\"a\": \"http://x/*y*/\"}", "{\"a\": \"http://x/*y*/\"}");
+    try expect_stripped("{\"a\": \"q\\\",}\"}", "{\"a\": \"q\\\",}\"}");
+    try expect_stripped("[\"a,]\"]", "[\"a,]\",]");
+    try testing.expectError(error.UnterminatedComment, strip_jsonc(testing.allocator, "{} /* open"));
+}
+
+test "parse_color" {
+    try testing.expectEqual(Color{ .color = 0x112233 }, parse_color("#123").?);
+    try testing.expectEqual(Color{ .color = 0x112233, .alpha = 0x44 }, parse_color("#1234").?);
+    try testing.expectEqual(Color{ .color = 0xa0b0c0 }, parse_color("#A0b0C0").?);
+    try testing.expectEqual(Color{ .color = 0xa0b0c0, .alpha = 0x80 }, parse_color("#a0b0c080").?);
+    try testing.expectEqual(null, parse_color(""));
+    try testing.expectEqual(null, parse_color("#12345"));
+    try testing.expectEqual(null, parse_color("#12345g"));
+    try testing.expectEqual(null, parse_color("123456"));
+}
+
+const TestContext = struct {
+    base: []const u8,
+    scopes: std.ArrayList([]const u8) = .empty,
+
+    fn context(self: *TestContext) Context {
+        return .{ .ptr = self, .vtable = &.{ .include = include, .scope_id = scope_id } };
+    }
+
+    fn include(ptr: *anyopaque, file_name: []const u8) Error![]const u8 {
+        const self: *TestContext = @ptrCast(@alignCast(ptr));
+        if (!eql(u8, file_name, "./base.json")) return error.IncludeNotFound;
+        return self.base;
+    }
+
+    fn scope_id(ptr: *anyopaque, scope: []const u8) error{OutOfMemory}!usize {
+        const self: *TestContext = @ptrCast(@alignCast(ptr));
+        for (self.scopes.items, 0..) |s, i| if (eql(u8, s, scope)) return i;
+        try self.scopes.append(testing.allocator, scope);
+        return self.scopes.items.len - 1;
+    }
+};
+
+test "load with include" {
+    const a = testing.allocator;
+    const base = try to_cbor(a, "base.json",
+        \\{
+        \\  "colors": { "editor.background": "#000000", "statusBar.background": "#010203" },
+        \\  "tokenColors": [
+        \\    { "scope": "comment", "settings": { "foreground": "#111111" } },
+        \\    { "scope": ["string", "keyword"], "settings": { "foreground": "#222222" } },
+        \\  ],
+        \\}
+    , null);
+    defer a.free(base);
+    const top = try to_cbor(a, "top-color-theme.json",
+        \\{
+        \\  // the name is the description
+        \\  "name": "Top Theme",
+        \\  "include": "./base.json",
+        \\  "colors": {
+        \\    "editor.foreground": "#ffffff",
+        \\    "editor.background": "#202020",
+        \\    "editor.background": "#101010",
+        \\    "editor.selectionBackground": "",
+        \\  },
+        \\  "tokenColors": [
+        \\    { "scope": "source string", "settings": { "foreground": "#333333", "fontStyle": "bold italic", "unknownKey": 1 } },
+        \\    { "settings": { "foreground": "#444444" } },
+        \\  ],
+        \\}
+    , null);
+    defer a.free(top);
+
+    var ctx: TestContext = .{ .base = base };
+    defer ctx.scopes.deinit(a);
+    const t = try load(a, ctx.context(), "/x/top-color-theme.json", top, .{});
+    defer a.free(t.tokens);
+
+    try testing.expectEqualStrings("top", t.name);
+    try testing.expectEqualStrings("Top Theme", t.description);
+    try testing.expectEqual(theme.Type.dark, t.type);
+    try testing.expectEqual(Color{ .color = 0x101010 }, t.editor.bg.?);
+    try testing.expectEqual(Color{ .color = 0x010203 }, t.statusbar.bg.?);
+    try testing.expectEqual(Color{ .color = 0x264F78 }, t.editor_selection.bg.?);
+
+    try testing.expectEqual(3, t.tokens.len);
+    const expected = [_]struct { []const u8, u24, ?theme.FontStyle }{
+        .{ "comment", 0x111111, null },
+        .{ "keyword", 0x222222, null },
+        .{ "string", 0x333333, .italic },
+    };
+    for (expected, t.tokens) |e, token| {
+        try testing.expectEqualStrings(e[0], ctx.scopes.items[token.id]);
+        try testing.expectEqual(e[1], token.style.fg.?.color);
+        try testing.expectEqual(e[2], token.style.fs);
+    }
+
+    var diagnostic: Diagnostic = .{};
+    try testing.expectError(error.InvalidTheme, load(a, ctx.context(), "top.json", top, .{ .strict = true, .diagnostic = &diagnostic }));
+    try testing.expectEqualStrings("top.json: unhandled style case \"unknownKey\" in 'unknown'", diagnostic.message());
+}
+
+test "load errors" {
+    const a = testing.allocator;
+    var ctx: TestContext = .{ .base = &.{} };
+    defer ctx.scopes.deinit(a);
+    const cases = [_]struct { []const u8, []const u8 }{
+        .{ "[]", "case.json: theme is not a JSON object" },
+        .{ "{\"include\": \"./missing.json\"}", "case.json: include './missing.json' not found" },
+        .{ "{\"tokenColors\": \"./file.tmTheme\"}", "case.json: 'tokenColors' is not an array (tokenColors files are not supported)" },
+        .{ "{\"tokenColors\": [{\"scope\": 1, \"settings\": {}}]}", "case.json: 'scope' is not a string or an array" },
+        .{ "{\"tokenColors\": [{\"scope\": \"a\", \"settings\": {\"foreground\": \"red\"}}]}", "case.json: invalid color 'red' for 'foreground' in 'unknown'" },
+    };
+    for (cases) |case| {
+        const cb = try to_cbor(a, "case.json", case[0], null);
+        defer a.free(cb);
+        var diagnostic: Diagnostic = .{};
+        try testing.expectError(error.InvalidTheme, load(a, ctx.context(), "case.json", cb, .{ .diagnostic = &diagnostic }));
+        try testing.expectEqualStrings(case[1], diagnostic.message());
+    }
+    var diagnostic: Diagnostic = .{};
+    try testing.expectError(error.InvalidTheme, to_cbor(a, "bad.json", "{\"a\": }", &diagnostic));
+    try testing.expectEqualStrings("bad.json: invalid JSON: SyntaxError", diagnostic.message());
+}

@@ -15,9 +15,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install Hjson
-        run: npm install -g hjson
-
       - name: Make tarball
         run: |
           ./zig build

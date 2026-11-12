@@ -14,20 +14,23 @@ pub fn build(b: *std.Build) void {
         }),
     });
     add_themes(b, themes_compile);
-    themes_compile.root_module.addImport("cbor", cbor_mod);
     themes_compile.root_module.addImport("theme", theme_mod);
-    themes_compile.root_module.addImport("vscode_theme", b.createModule(.{
+    const vscode_theme_mod = b.createModule(.{
         .root_source_file = b.path("src/vscode_theme.zig"),
+        .target = target,
         .imports = &.{
             .{ .name = "cbor", .module = cbor_mod },
             .{ .name = "theme", .module = theme_mod },
         },
-    }));
+    });
+    themes_compile.root_module.addImport("vscode_theme", vscode_theme_mod);
     // b.installArtifact(themes_compile);
     const themes_compile_step = b.addRunArtifact(themes_compile);
     const themes_compile_output = themes_compile_step.addOutputFileArg("themes.zig");
     b.getInstallStep().dependOn(&b.addInstallFileWithDir(themes_compile_output, .{ .custom = "src" }, "themes.zig").step);
     b.installFile("src/theme.zig", "src/theme.zig");
+    b.installFile("src/vscode_theme.zig", "src/vscode_theme.zig");
+    b.installFile("src/cbor_missing.zig", "src/cbor_missing.zig");
     b.installFile("src/build-dest.zig", "./build.zig");
     b.installFile("src/build-dest.zig.zon", "./build.zig.zon");
 
@@ -55,6 +58,9 @@ pub fn build(b: *std.Build) void {
             .target = target,
         }),
     });
+
+    const test_step = b.step("test", "Run unit tests");
+    test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = vscode_theme_mod })).step);
 
     const check_step = b.step("check", "Verify generated files compile");
     check_step.dependOn(&check_exe.step);
