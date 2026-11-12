@@ -16,6 +16,13 @@ pub fn build(b: *std.Build) void {
     add_themes(b, themes_compile);
     themes_compile.root_module.addImport("cbor", cbor_mod);
     themes_compile.root_module.addImport("theme", theme_mod);
+    themes_compile.root_module.addImport("vscode_theme", b.createModule(.{
+        .root_source_file = b.path("src/vscode_theme.zig"),
+        .imports = &.{
+            .{ .name = "cbor", .module = cbor_mod },
+            .{ .name = "theme", .module = theme_mod },
+        },
+    }));
     // b.installArtifact(themes_compile);
     const themes_compile_step = b.addRunArtifact(themes_compile);
     const themes_compile_output = themes_compile_step.addOutputFileArg("themes.zig");
