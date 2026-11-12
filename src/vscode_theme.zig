@@ -395,8 +395,7 @@ fn load_token_settings_object(src: Source, scopes_name: ?[]const u8, cb: []const
                 var value: []const u8 = undefined;
                 if (!(cbor.matchString(&iter, &value) catch false))
                     return src.invalid("'fontStyle' in '{s}' is not a string", .{token_name});
-                // only one style fits in Style.fs, the last one wins
-                if (font_styles.get(value)) |fs| {
+                if (parse_font_style(value)) |fs| {
                     style.fs = fs;
                 } else {
                     if (src.options.strict) return src.invalid("unhandled fontStyle \"{s}\" in '{s}'", .{ value, token_name });
@@ -428,18 +427,33 @@ const SettingsField = enum {
     tagsOptions,
 };
 
-const font_styles: std.StaticStringMap(theme.FontStyle) = .initComptime(.{
-    .{ "italic", .italic },
-    .{ "bold", .bold },
-    .{ "underline", .underline },
-    .{ "italic underline", .underline },
-    .{ "bold italic", .italic },
-    .{ "italic bold", .italic },
-    .{ "strikethrough", .strikethrough },
-    .{ "normal", .normal },
-    .{ "regular", .normal },
-    .{ "", .normal },
-});
+/// a space separated list of styles, in any order
+fn parse_font_style(value: []const u8) ?theme.FontStyle {
+    var bold = false;
+    var italic = false;
+    var underline = false;
+    var strikethrough = false;
+    var words = std.mem.tokenizeScalar(u8, value, ' ');
+    while (words.next()) |word| {
+        if (eql(u8, word, "bold")) {
+            bold = true;
+        } else if (eql(u8, word, "italic")) {
+            italic = true;
+        } else if (eql(u8, word, "underline")) {
+            underline = true;
+        } else if (eql(u8, word, "strikethrough")) {
+            strikethrough = true;
+        } else if (!eql(u8, word, "normal") and !eql(u8, word, "regular")) return null;
+    }
+    const count = @as(u8, @intFromBool(bold)) + @intFromBool(italic) + @intFromBool(underline) + @intFromBool(strikethrough);
+    return switch (count) {
+        0 => .normal,
+        1 => if (bold) .bold else if (italic) .italic else if (underline) .underline else .strikethrough,
+        2 => if (bold and italic) .bold_italic else if (italic and underline) .italic_underline else if (bold and underline) .bold_underline else null,
+        3 => if (bold and italic and underline) .bold_italic_underline else null,
+        else => null,
+    };
+}
 
 fn load_scopes(src: Source, tokens: *TokenMap, style: Style, cb: []const u8) Error!void {
     var iter = cb;
@@ -1398,6 +1412,20 @@ test "strip_jsonc" {
     try testing.expectError(error.UnterminatedComment, strip_jsonc(testing.allocator, "{} /* open"));
 }
 
+test "parse_font_style" {
+    try testing.expectEqual(.normal, parse_font_style(""));
+    try testing.expectEqual(.normal, parse_font_style("regular"));
+    try testing.expectEqual(.bold, parse_font_style("bold"));
+    try testing.expectEqual(.strikethrough, parse_font_style(" strikethrough "));
+    try testing.expectEqual(.bold_italic, parse_font_style("bold italic"));
+    try testing.expectEqual(.bold_italic, parse_font_style("italic bold"));
+    try testing.expectEqual(.italic_underline, parse_font_style("underline italic"));
+    try testing.expectEqual(.bold_underline, parse_font_style("underline bold"));
+    try testing.expectEqual(.bold_italic_underline, parse_font_style("bold italic underline"));
+    try testing.expectEqual(null, parse_font_style("bold strikethrough"));
+    try testing.expectEqual(null, parse_font_style("oblique"));
+}
+
 test "parse_color" {
     try testing.expectEqual(Color{ .color = 0x112233 }, parse_color("#123").?);
     try testing.expectEqual(Color{ .color = 0x112233, .alpha = 0x44 }, parse_color("#1234").?);
@@ -1478,7 +1506,7 @@ test "load with include" {
     const expected = [_]struct { []const u8, u24, ?theme.FontStyle }{
         .{ "comment", 0x111111, null },
         .{ "keyword", 0x222222, null },
-        .{ "string", 0x333333, .italic },
+        .{ "string", 0x333333, .bold_italic },
     };
     for (expected, t.tokens) |e, token| {
         try testing.expectEqualStrings(e[0], ctx.scopes.items[token.id]);

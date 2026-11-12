@@ -50,14 +50,7 @@ fn write_Style(writer: *std.Io.Writer, value: Style) !void {
     _ = try writer.print(".{{ ", .{});
     if (value.fg) |fg| _ = try writer.print(".fg = .{{ .color = 0x{x}, .alpha = 0x{x} }},", .{ fg.color, fg.alpha });
     if (value.bg) |bg| _ = try writer.print(".bg = .{{ .color = 0x{x}, .alpha = 0x{x} }},", .{ bg.color, bg.alpha });
-    if (value.fs) |fs| _ = try writer.print(".fs = .{s},", .{switch (fs) {
-        .normal => "normal",
-        .bold => "bold",
-        .italic => "italic",
-        .underline => "underline",
-        .undercurl => "undercurl",
-        .strikethrough => "strikethrough",
-    }});
+    if (value.fs) |fs| _ = try writer.print(".fs = .{t},", .{fs});
     _ = try writer.print("}}", .{});
 }
 

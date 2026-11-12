@@ -71,7 +71,18 @@ scope_type: ScopeType,
 tokens: Tokens,
 
 pub const Type = enum { dark, light };
-pub const FontStyle = enum { normal, bold, italic, underline, undercurl, strikethrough };
+pub const FontStyle = enum {
+    normal,
+    bold,
+    italic,
+    underline,
+    undercurl,
+    strikethrough,
+    bold_italic,
+    italic_underline,
+    bold_underline,
+    bold_italic_underline,
+};
 pub const Style = struct { fg: ?Color = null, bg: ?Color = null, fs: ?FontStyle = null };
 pub const Color = struct {
     color: u24,
